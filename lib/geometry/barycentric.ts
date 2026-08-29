@@ -31,13 +31,8 @@ export function mixColor(bc: Barycentric, ca: RGB, cb: RGB, cc: RGB): RGB {
   ];
 }
 
-export function isNearCenter(bc: Barycentric, tolerance = 0.042) {
-  if (bc.degenerate || !isInside(bc)) return false;
-  return (
-    Math.abs(bc.alpha - 1 / 3) <= tolerance &&
-    Math.abs(bc.beta - 1 / 3) <= tolerance &&
-    Math.abs(bc.gamma - 1 / 3) <= tolerance
-  );
+export function isNearCenter(bc: Barycentric) {
+  return !bc.degenerate && isInside(bc) && centerCloseness(bc) >= 0.9;
 }
 
 export function centerCloseness(bc: Barycentric) {
