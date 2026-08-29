@@ -2,6 +2,7 @@ import type { PointerEvent } from "react";
 
 import {
   barycentric,
+  centerCloseness,
   isInside,
   isNearCenter,
   mixColor,
@@ -142,6 +143,20 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
         canvas.releasePointerCapture(event.nativeEvent.pointerId);
       }
       world.drag = null;
+      const next = size();
+      if (next) {
+        const a = toPx(world.a, next.width, next.height);
+        const b = toPx(world.b, next.width, next.height);
+        const c = toPx(world.c, next.width, next.height);
+        const probe = toPx(world.probe, next.width, next.height);
+        const bc = barycentric(probe, a, b, c);
+        if (isInside(bc) && centerCloseness(bc) >= 0.85) {
+          world.probe = {
+            x: (world.a.x + world.b.x + world.c.x) / 3,
+            y: (world.a.y + world.b.y + world.c.y) / 3,
+          };
+        }
+      }
       sync();
     },
     reset() {
