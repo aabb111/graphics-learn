@@ -65,9 +65,20 @@ function drawProbe(
   ctx.setLineDash([]);
 }
 
+function drawCentroid(ctx: CanvasRenderingContext2D, a: Vec2, b: Vec2, c: Vec2) {
+  const x = (a.x + b.x + c.x) / 3;
+  const y = (a.y + b.y + c.y) / 3;
+  ctx.beginPath();
+  ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgb(20 20 20 / 0.22)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+
 export function drawOverlay(ctx: CanvasRenderingContext2D, input: OverlayInput) {
   const { a, b, c, probe, mix, inside, degenerate } = input;
   strokeTriangle(ctx, a, b, c);
+  drawCentroid(ctx, a, b, c);
   drawVertex(ctx, a, VERTEX_HEX.a, "A · α");
   drawVertex(ctx, b, VERTEX_HEX.b, "B · β");
   drawVertex(ctx, c, VERTEX_HEX.c, "C · γ");

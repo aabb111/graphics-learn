@@ -14,7 +14,7 @@ export const DEFAULT_WORLD: World = {
   a: { x: 0.5, y: 0.18 },
   b: { x: 0.18, y: 0.82 },
   c: { x: 0.84, y: 0.78 },
-  probe: { x: 0.5, y: 0.62 },
+  probe: { x: 0.62, y: 0.46 },
   pinned: false,
   drag: null,
   solved: false,
