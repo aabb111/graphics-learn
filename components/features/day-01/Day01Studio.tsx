@@ -14,6 +14,7 @@ export function Day01Studio() {
         hud={hud}
         onReset={studio.reset}
         onTogglePin={studio.togglePin}
+        onGoCenter={studio.goCenter}
       />
     </div>
   );

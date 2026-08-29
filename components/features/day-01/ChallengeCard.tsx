@@ -19,7 +19,7 @@ export function ChallengeCard({ hud }: ChallengeCardProps) {
     <section className="border-t border-border/80 pt-5">
       <p className="text-[11px] tracking-[0.16em] text-muted-foreground">极小挑战</p>
       <p className="mt-2 text-[15px] leading-7">
-        把探针放到淡圈上：那是三个顶点的平均，α、β、γ 都会靠近 1/3。
+        把探针放到淡蓝圈上，或点「放到重心」。那是三个顶点的平均。
       </p>
       <div className="mt-4 h-[2px] bg-border">
         <div

@@ -2,9 +2,9 @@ import type { PointerEvent } from "react";
 
 import {
   barycentric,
-  centerCloseness,
   isInside,
   isNearCenter,
+  isNearCentroidPx,
   mixColor,
   signedArea,
   toPx,
@@ -38,6 +38,7 @@ export type Studio = {
   onPointerUp: (event: PointerEvent<HTMLCanvasElement>) => void;
   reset: () => void;
   togglePin: () => void;
+  goCenter: () => void;
 };
 
 const MIN_AREA = 0.045;
@@ -77,9 +78,26 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const c = toPx(world.c, next.width, next.height);
     const probe = toPx(world.probe, next.width, next.height);
     const bc = barycentric(probe, a, b, c);
-    if (isNearCenter(bc)) world.solved = true;
+    if (isNearCenter(bc) || isNearCentroidPx(probe, a, b, c)) {
+      world.solved = true;
+    }
     drawScene(canvas, fill, { a, b, c, probe }, bc, isInside(bc));
     onHud(hudFrom(bc, world));
+  }
+
+  function snapToCentroid() {
+    const next = size();
+    if (!next) return;
+    const a = toPx(world.a, next.width, next.height);
+    const b = toPx(world.b, next.width, next.height);
+    const c = toPx(world.c, next.width, next.height);
+    const probe = toPx(world.probe, next.width, next.height);
+    if (!isNearCentroidPx(probe, a, b, c, 36)) return;
+    world.probe = {
+      x: (world.a.x + world.b.x + world.c.x) / 3,
+      y: (world.a.y + world.b.y + world.c.y) / 3,
+    };
+    world.solved = true;
   }
 
   function place(event: PointerEvent<HTMLCanvasElement>) {
@@ -135,6 +153,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
         }
       } else if (world.drag === "probe" || !world.pinned) {
         world.probe = placed.norm;
+        if (world.drag === "probe") snapToCentroid();
       }
       sync();
     },
@@ -143,20 +162,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
         canvas.releasePointerCapture(event.nativeEvent.pointerId);
       }
       world.drag = null;
-      const next = size();
-      if (next) {
-        const a = toPx(world.a, next.width, next.height);
-        const b = toPx(world.b, next.width, next.height);
-        const c = toPx(world.c, next.width, next.height);
-        const probe = toPx(world.probe, next.width, next.height);
-        const bc = barycentric(probe, a, b, c);
-        if (isInside(bc) && centerCloseness(bc) >= 0.85) {
-          world.probe = {
-            x: (world.a.x + world.b.x + world.c.x) / 3,
-            y: (world.a.y + world.b.y + world.c.y) / 3,
-          };
-        }
-      }
+      snapToCentroid();
       sync();
     },
     reset() {
@@ -171,6 +177,15 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     },
     togglePin() {
       world.pinned = !world.pinned;
+      sync();
+    },
+    goCenter() {
+      world.probe = {
+        x: (world.a.x + world.b.x + world.c.x) / 3,
+        y: (world.a.y + world.b.y + world.c.y) / 3,
+      };
+      world.pinned = true;
+      world.solved = true;
       sync();
     },
   };

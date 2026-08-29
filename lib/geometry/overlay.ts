@@ -69,10 +69,14 @@ function drawCentroid(ctx: CanvasRenderingContext2D, a: Vec2, b: Vec2, c: Vec2) 
   const x = (a.x + b.x + c.x) / 3;
   const y = (a.y + b.y + c.y) / 3;
   ctx.beginPath();
-  ctx.arc(x, y, 4.5, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgb(20 20 20 / 0.22)";
-  ctx.lineWidth = 1;
+  ctx.arc(x, y, 6, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgb(47 79 224 / 0.45)";
+  ctx.lineWidth = 1.25;
   ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(x, y, 1.25, 0, Math.PI * 2);
+  ctx.fillStyle = "rgb(47 79 224 / 0.7)";
+  ctx.fill();
 }
 
 export function drawOverlay(ctx: CanvasRenderingContext2D, input: OverlayInput) {
