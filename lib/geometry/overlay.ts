@@ -13,7 +13,7 @@ type OverlayInput = {
   winBeat?: number;
 };
 
-const VERTEX_R = 6;
+const VERTEX_R = 3;
 const PALE = { r: 120, g: 170, b: 230 };
 const GREEN = { r: 26, g: 127, b: 75 };
 
