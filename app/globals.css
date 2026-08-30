@@ -150,6 +150,20 @@
   animation: motion-win-line 180ms linear;
 }
 
+.motion-pass-title {
+  animation: motion-win-line 180ms linear both;
+}
+
+.motion-pass-stamp {
+  animation:
+    motion-win-line 180ms linear 80ms both,
+    motion-pass-stamp 220ms ease-out 80ms both;
+}
+
+.motion-pass-late {
+  animation: motion-win-line 180ms linear 160ms both;
+}
+
 @keyframes motion-win-line {
   from {
     opacity: 0;
@@ -159,12 +173,24 @@
   }
 }
 
+@keyframes motion-pass-stamp {
+  from {
+    transform: scale(0.92);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .motion-hold {
     transition-duration: 0ms;
   }
 
-  .motion-win-line {
+  .motion-win-line,
+  .motion-pass-title,
+  .motion-pass-stamp,
+  .motion-pass-late {
     animation: none;
   }
 }

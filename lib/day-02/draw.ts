@@ -29,6 +29,8 @@ function strokeTriangle(
   ctx.stroke();
 }
 
+const PLAY_KNOB_R = 11;
+
 function drawKnob(
   ctx: CanvasRenderingContext2D,
   point: { x: number; y: number },
@@ -87,6 +89,8 @@ export function drawPlay(
   const painted = paintFill(canvas, fill, hues);
   if (!painted) return;
   const { ctx, a, b, c } = painted;
+  const { dpr } = sizeCanvas(canvas);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const colors = huesToColors(hues);
   if (drag) {
     const center = drag === "a" ? a : drag === "b" ? b : c;
@@ -96,9 +100,9 @@ export function drawPlay(
     ctx.lineWidth = 1;
     ctx.stroke();
   }
-  drawKnob(ctx, a, rgbToCss(colors.a), 11, "A");
-  drawKnob(ctx, b, rgbToCss(colors.b), 11, "B");
-  drawKnob(ctx, c, rgbToCss(colors.c), 11, "C");
+  drawKnob(ctx, a, rgbToCss(colors.a), PLAY_KNOB_R, "A");
+  drawKnob(ctx, b, rgbToCss(colors.b), PLAY_KNOB_R, "B");
+  drawKnob(ctx, c, rgbToCss(colors.c), PLAY_KNOB_R, "C");
 }
 
 export function drawTarget(canvas: HTMLCanvasElement, fill: HTMLCanvasElement) {
