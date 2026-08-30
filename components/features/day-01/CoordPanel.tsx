@@ -11,10 +11,9 @@ import { cn } from "@/lib/utils";
 type CoordPanelProps = {
   hud: StudioHud;
   onReset: () => void;
-  onTogglePin: () => void;
 };
 
-export function CoordPanel({ hud, onReset, onTogglePin }: CoordPanelProps) {
+export function CoordPanel({ hud, onReset }: CoordPanelProps) {
   return (
     <aside className="flex flex-col gap-8 md:w-[340px] md:shrink-0">
       <div className="flex flex-col gap-3">
@@ -30,9 +29,6 @@ export function CoordPanel({ hud, onReset, onTogglePin }: CoordPanelProps) {
       <div className="flex flex-col gap-3">
         {hud.solved ? <WinFeedback /> : <ChallengeCard hud={hud} />}
         <div className="flex flex-nowrap items-center gap-2">
-          <Button variant="outline" className="h-8" onClick={onTogglePin}>
-            {hud.pinned ? "跟随指针" : "钉住"}
-          </Button>
           <Button variant="ghost" className="h-8" onClick={onReset}>
             {hud.solved ? "再玩一次" : "重置三角形"}
           </Button>

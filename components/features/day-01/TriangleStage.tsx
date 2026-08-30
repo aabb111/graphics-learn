@@ -13,7 +13,7 @@ export function TriangleStage({ studio }: TriangleStageProps) {
   return (
     <div className="flex flex-1 flex-col">
       <p className="mb-3 text-[14px] leading-6 text-foreground">
-        过关：把取样点拖到淡蓝圈上（三角形正中）。三个角能拖，但不决定过关。
+        过关：把取样点拖到淡蓝圈上（三角形正中），停约 1 秒。三个角能拖，但不决定过关。点一下取样点就能钉住。
       </p>
       <canvas
         ref={bindCanvas}

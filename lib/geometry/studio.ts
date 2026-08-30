@@ -11,6 +11,7 @@ import {
 import { VERTEX_RGB } from "@/lib/geometry/colors";
 import { drawScene } from "@/lib/geometry/draw-scene";
 import { hitTarget, pointerToCss } from "@/lib/geometry/hit";
+import { createHoldWatch } from "@/lib/geometry/hold";
 import type { Barycentric, RGB } from "@/lib/geometry/types";
 import {
   clampNorm,
@@ -28,6 +29,7 @@ export type StudioHud = {
   mix: RGB;
   solved: boolean;
   pinned: boolean;
+  holding: boolean;
   nearCenter: boolean;
 };
 
@@ -37,7 +39,6 @@ export type Studio = {
   onPointerMove: (event: PointerEvent<HTMLCanvasElement>) => void;
   onPointerUp: (event: PointerEvent<HTMLCanvasElement>) => void;
   reset: () => void;
-  togglePin: () => void;
 };
 
 const MIN_AREA = 0.045;
@@ -52,6 +53,7 @@ function hudFrom(bc: Barycentric, world: World): StudioHud {
     mix: mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c),
     solved: world.solved,
     pinned: world.pinned,
+    holding: world.holding,
     nearCenter: isNearCenter(bc),
   };
 }
@@ -61,6 +63,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let fill: HTMLCanvasElement | null = null;
   let canvas: HTMLCanvasElement | null = null;
   let observer: ResizeObserver | null = null;
+  const hold = createHoldWatch(() => sync());
 
   function size() {
     if (!canvas) return null;
@@ -78,9 +81,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const c = toPx(world.c, next.width, next.height);
     const probe = toPx(world.probe, next.width, next.height);
     const bc = barycentric(probe, a, b, c);
-    if (world.pinned && isNearCenter(bc)) {
-      world.solved = true;
-    }
+    hold.evaluate(world, isNearCenter(bc));
     drawScene(canvas, fill, { a, b, c, probe }, bc, isInside(bc));
     onHud(hudFrom(bc, world));
   }
@@ -112,18 +113,28 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     onPointerDown(event) {
       const placed = place(event);
       if (!placed || !canvas) return;
-      canvas.setPointerCapture(event.nativeEvent.pointerId);
-      const hit = hitTarget(placed.css, {
-        a: toPx(world.a, placed.next.width, placed.next.height),
-        b: toPx(world.b, placed.next.width, placed.next.height),
-        c: toPx(world.c, placed.next.width, placed.next.height),
-      }, toPx(world.probe, placed.next.width, placed.next.height));
+      const hit = hitTarget(
+        placed.css,
+        {
+          a: toPx(world.a, placed.next.width, placed.next.height),
+          b: toPx(world.b, placed.next.width, placed.next.height),
+          c: toPx(world.c, placed.next.width, placed.next.height),
+        },
+        toPx(world.probe, placed.next.width, placed.next.height),
+      );
       if (hit === "a" || hit === "b" || hit === "c") {
+        canvas.setPointerCapture(event.nativeEvent.pointerId);
         world.drag = hit;
-      } else {
+      } else if (hit === "probe") {
+        canvas.setPointerCapture(event.nativeEvent.pointerId);
         world.drag = "probe";
         world.pinned = true;
+      } else if (!world.pinned) {
+        canvas.setPointerCapture(event.nativeEvent.pointerId);
+        world.drag = "probe";
         world.probe = placed.norm;
+      } else {
+        return;
       }
       sync();
     },
@@ -155,11 +166,10 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       world.probe = next.probe;
       world.pinned = false;
       world.drag = null;
+      world.holding = false;
+      world.holdFrom = 0;
       world.solved = false;
-      sync();
-    },
-    togglePin() {
-      world.pinned = !world.pinned;
+      hold.stop();
       sync();
     },
   };

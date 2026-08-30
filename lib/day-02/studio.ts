@@ -1,7 +1,7 @@
 import type { PointerEvent } from "react";
 
 import { drawPlay, drawTarget, huesToColors } from "@/lib/day-02/draw";
-import { createHoldWatch } from "@/lib/day-02/hold";
+import { createHoldWatch } from "@/lib/geometry/hold";
 import { pointerHue } from "@/lib/day-02/hue";
 import { matchScore } from "@/lib/day-02/match";
 import { cloneWorld, TARGET_HUES, TRIANGLE } from "@/lib/day-02/world";

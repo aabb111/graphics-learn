@@ -7,6 +7,8 @@ export type World = {
   probe: Vec2;
   pinned: boolean;
   drag: DragTarget | null;
+  holding: boolean;
+  holdFrom: number;
   solved: boolean;
 };
 
@@ -17,6 +19,8 @@ export const DEFAULT_WORLD: World = {
   probe: { x: 0.62, y: 0.46 },
   pinned: false,
   drag: null,
+  holding: false,
+  holdFrom: 0,
   solved: false,
 };
 
@@ -28,6 +32,8 @@ export function cloneWorld(world: World = DEFAULT_WORLD): World {
     probe: { ...world.probe },
     pinned: world.pinned,
     drag: world.drag,
+    holding: world.holding,
+    holdFrom: world.holdFrom,
     solved: world.solved,
   };
 }

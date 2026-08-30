@@ -25,7 +25,7 @@ export function ChallengeCard({ hud }: ChallengeCardProps) {
           style={{ width: `${closeness * 100}%` }}
         />
       </div>
-      {hud.nearCenter && !hud.pinned ? (
+      {hud.holding ? (
         <p className="mt-3 text-[14px] leading-6 text-foreground">停在这儿</p>
       ) : null}
     </section>
