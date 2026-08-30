@@ -75,6 +75,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let raf = 0;
   let grab = { x: 0, y: 0 };
   let pressVertex = { x: 0, y: 0 };
+  let released = false;
   const hold = createHoldWatch(() => sync());
 
   function size() {
@@ -89,15 +90,14 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     if (!next || next.width < 8 || next.height < 8) return;
     fill ??= document.createElement("canvas");
     const { a, b, c, bc } = weightsAtCentroid(world, next.width, next.height);
-    hold.evaluate(
-      world,
-      holdReady({
-        armed: world.armed,
-        dragging: Boolean(world.drag),
-        degenerate: bc.degenerate,
-      }),
-    );
-    drawScene(canvas, fill, { a, b, c }, holdFill(world));
+    const ready = holdReady({
+      armed: world.armed,
+      released,
+      dragging: Boolean(world.drag),
+      degenerate: bc.degenerate,
+    });
+    hold.evaluate(world, ready);
+    drawScene(canvas, fill, { a, b, c }, ready || world.solved ? holdFill(world) : 0);
     onHud(hudFrom(bc, world));
     if (world.holding && !raf) {
       raf = requestAnimationFrame(() => {
@@ -159,6 +159,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       if (canvas?.hasPointerCapture(event.nativeEvent.pointerId)) {
         canvas.releasePointerCapture(event.nativeEvent.pointerId);
       }
+      if (world.armed) released = true;
       world.drag = null;
       sync();
     },
@@ -168,6 +169,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       world.b = next.b;
       world.c = next.c;
       world.armed = false;
+      released = false;
       world.drag = null;
       world.holding = false;
       world.holdFrom = 0;

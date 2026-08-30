@@ -1,17 +1,12 @@
-import { cn } from "@/lib/utils";
-
 type HoldHintProps = {
   show: boolean;
 };
 
 export function HoldHint({ show }: HoldHintProps) {
+  if (!show) return null;
+
   return (
-    <p
-      className={cn(
-        "mt-3 text-[14px] leading-6 text-foreground motion-hold",
-        show ? "opacity-100 motion-hold-in" : "opacity-0 motion-hold-out",
-      )}
-    >
+    <p className="mt-3 text-[14px] leading-6 text-foreground motion-hold motion-hold-in">
       稳住
     </p>
   );

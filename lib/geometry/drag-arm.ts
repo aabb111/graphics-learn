@@ -10,8 +10,14 @@ export function draggedPast(
 
 export function holdReady(input: {
   armed: boolean;
+  released: boolean;
   dragging: boolean;
   degenerate: boolean;
 }) {
-  return input.armed && !input.dragging && !input.degenerate;
+  return (
+    input.armed &&
+    input.released &&
+    !input.dragging &&
+    !input.degenerate
+  );
 }
