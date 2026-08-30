@@ -14,6 +14,7 @@ import {
   clampToTriangle,
   inTargetRing,
   SAMPLE_HIT_R,
+  TOUCH_HIT_R,
   spawnSample,
 } from "@/lib/geometry/sample";
 import type { Barycentric, RGB, Vec2 } from "@/lib/geometry/types";
@@ -173,11 +174,13 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       const placed = place(event);
       if (!placed || !canvas) return;
       const { sample } = layout(world, placed.next.width, placed.next.height);
-      if (!hitPoint(placed.css, sample, SAMPLE_HIT_R)) {
+      const remotePress = isRemote(event.nativeEvent.pointerType);
+      const hitR = remotePress ? TOUCH_HIT_R : SAMPLE_HIT_R;
+      if (!hitPoint(placed.css, sample, hitR)) {
         paintCursor(false);
         return;
       }
-      if (isRemote(event.nativeEvent.pointerType)) {
+      if (remotePress) {
         remote = { ...placed.css };
       } else {
         grab = { x: placed.css.x - sample.x, y: placed.css.y - sample.y };
