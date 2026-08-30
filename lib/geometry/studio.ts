@@ -25,6 +25,8 @@ import {
   type World,
 } from "@/lib/geometry/world";
 
+export type StudioCursor = "grab" | "grabbing" | "default";
+
 export type StudioHud = {
   alpha: number;
   beta: number;
@@ -34,6 +36,7 @@ export type StudioHud = {
   mix: RGB;
   solved: boolean;
   holding: boolean;
+  cursor: StudioCursor;
 };
 
 export type Studio = {
@@ -42,6 +45,7 @@ export type Studio = {
   onPointerMove: (event: PointerEvent<HTMLCanvasElement>) => void;
   onPointerUp: (event: PointerEvent<HTMLCanvasElement>) => void;
   onPointerCancel: (event: PointerEvent<HTMLCanvasElement>) => void;
+  onPointerLeave: () => void;
   reset: () => void;
 };
 
@@ -55,7 +59,7 @@ function blockNativeSelect(event: Event) {
   event.preventDefault();
 }
 
-function hudFrom(bc: Barycentric, world: World): StudioHud {
+function hudFrom(bc: Barycentric, world: World, cursor: StudioCursor): StudioHud {
   return {
     alpha: bc.alpha,
     beta: bc.beta,
@@ -65,6 +69,7 @@ function hudFrom(bc: Barycentric, world: World): StudioHud {
     mix: mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c),
     solved: world.solved,
     holding: world.holding,
+    cursor,
   };
 }
 
@@ -92,6 +97,8 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let raf = 0;
   let grab = { x: 0, y: 0 };
   let remote: Vec2 | null = null;
+  let lastCss: Vec2 | null = null;
+  let cursor: StudioCursor = "default";
   let winFrom = 0;
   const hold = createHoldWatch(() => sync());
 
@@ -101,9 +108,11 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     return { width: rect.width, height: rect.height };
   }
 
-  function paintCursor(over: boolean) {
+  function paintCursor(sample: Vec2) {
+    const over = Boolean(lastCss && hitPoint(lastCss, sample, SAMPLE_HIT_R));
+    cursor = world.dragging ? "grabbing" : over ? "grab" : "default";
     if (!canvas) return;
-    canvas.style.cursor = world.dragging ? "grabbing" : over ? "grab" : "default";
+    canvas.style.cursor = cursor;
   }
 
   function sync() {
@@ -125,7 +134,8 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const ringFill =
       ready && !world.solved ? (reduced ? 1 : holdFill(world)) : 0;
     drawScene(canvas, fill, { a, b, c, sample }, mix, ringFill, world.solved, winBeat);
-    onHud(hudFrom(bc, world));
+    paintCursor(sample);
+    onHud(hudFrom(bc, world, cursor));
     if ((world.holding || (world.solved && winBeat < 1)) && !raf) {
       raf = requestAnimationFrame(() => {
         raf = 0;
@@ -176,8 +186,9 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       const { sample } = layout(world, placed.next.width, placed.next.height);
       const remotePress = isRemote(event.nativeEvent.pointerType);
       const hitR = remotePress ? TOUCH_HIT_R : SAMPLE_HIT_R;
+      lastCss = placed.css;
       if (!hitPoint(placed.css, sample, hitR)) {
-        paintCursor(false);
+        paintCursor(sample);
         return;
       }
       if (remotePress) {
@@ -186,7 +197,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
         grab = { x: placed.css.x - sample.x, y: placed.css.y - sample.y };
       }
       world.dragging = true;
-      paintCursor(true);
+      paintCursor(sample);
       try {
         canvas.setPointerCapture(event.nativeEvent.pointerId);
       } catch {
@@ -197,6 +208,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     onPointerMove(event) {
       const placed = place(event);
       if (!placed) return;
+      lastCss = placed.css;
       const { a, b, c, sample } = layout(world, placed.next.width, placed.next.height);
       if (world.dragging && remote) {
         putSample(
@@ -221,7 +233,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
           placed.next.height,
         );
       }
-      paintCursor(world.dragging || hitPoint(placed.css, sample, SAMPLE_HIT_R));
+      paintCursor(sample);
       sync();
     },
     onPointerUp(event) {
@@ -229,6 +241,11 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     },
     onPointerCancel(event) {
       lift(event.nativeEvent.pointerId);
+    },
+    onPointerLeave() {
+      if (world.dragging) return;
+      lastCss = null;
+      sync();
     },
     reset() {
       const next = cloneWorld();
@@ -242,7 +259,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       hold.stop();
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
-      paintCursor(false);
+      lastCss = null;
       sync();
     },
   };
@@ -250,4 +267,4 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
 
 const start = layout(DEFAULT_WORLD, 100, 100);
 
-export const INITIAL_HUD = hudFrom(start.bc, DEFAULT_WORLD);
+export const INITIAL_HUD = hudFrom(start.bc, DEFAULT_WORLD, "default");

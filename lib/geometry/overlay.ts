@@ -1,5 +1,5 @@
 import { VERTEX_HEX } from "@/lib/geometry/colors";
-import { SAMPLE_R, TARGET_RING_R } from "@/lib/geometry/sample";
+import { SAMPLE_R, SAMPLE_STROKE, TARGET_RING_R } from "@/lib/geometry/sample";
 import type { RGB, Vec2 } from "@/lib/geometry/types";
 
 type OverlayInput = {
@@ -66,7 +66,9 @@ function drawSample(ctx: CanvasRenderingContext2D, point: Vec2, fill: RGB) {
   ctx.closePath();
   ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
   ctx.fill();
-  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, SAMPLE_R + SAMPLE_STROKE / 2, 0, Math.PI * 2);
+  ctx.lineWidth = SAMPLE_STROKE;
   ctx.strokeStyle = "#ffffff";
   ctx.stroke();
 }

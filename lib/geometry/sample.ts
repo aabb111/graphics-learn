@@ -3,7 +3,8 @@ import type { Vec2 } from "@/lib/geometry/types";
 
 export const TARGET_RING_R = 10;
 export const SAMPLE_R = 7;
-export const SAMPLE_HIT_R = 8;
+export const SAMPLE_STROKE = 2;
+export const SAMPLE_HIT_R = SAMPLE_R + SAMPLE_STROKE;
 export const TOUCH_HIT_R = 22;
 
 export const SPAWN_WEIGHTS = {

@@ -3,20 +3,27 @@
 import type { PointerEvent, SyntheticEvent } from "react";
 
 import { cn } from "@/lib/utils";
-import type { Studio } from "@/lib/geometry/studio";
+import type { Studio, StudioCursor } from "@/lib/geometry/studio";
 
 type TriangleStageProps = {
   studio: Studio;
   solved: boolean;
+  cursor: StudioCursor;
 };
 
 function blockSelect(event: SyntheticEvent) {
   event.preventDefault();
 }
 
-export function TriangleStage({ studio, solved }: TriangleStageProps) {
-  const { bindCanvas, onPointerDown, onPointerMove, onPointerUp, onPointerCancel } =
-    studio;
+export function TriangleStage({ studio, solved, cursor }: TriangleStageProps) {
+  const {
+    bindCanvas,
+    onPointerDown,
+    onPointerMove,
+    onPointerUp,
+    onPointerCancel,
+    onPointerLeave,
+  } = studio;
 
   function down(event: PointerEvent<HTMLCanvasElement>) {
     event.preventDefault();
@@ -44,6 +51,7 @@ export function TriangleStage({ studio, solved }: TriangleStageProps) {
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerCancel}
+          onPointerLeave={onPointerLeave}
           onContextMenu={blockSelect}
           onDragStart={blockSelect}
           onCopy={blockSelect}
@@ -52,6 +60,8 @@ export function TriangleStage({ studio, solved }: TriangleStageProps) {
           className={cn(
             "h-[min(58vh,560px)] w-full touch-none select-none bg-[#F4F4F2]",
             "rounded-sm border border-border/80",
+            cursor === "grab" && "cursor-grab",
+            cursor === "grabbing" && "cursor-grabbing",
           )}
           aria-label="拖中间这个点。三个数会变。拖到正中，三个数一样。"
         />
