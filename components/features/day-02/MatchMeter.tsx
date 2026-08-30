@@ -1,5 +1,4 @@
 import type { ColorHud } from "@/lib/day-02/studio";
-import { cn } from "@/lib/utils";
 
 type MatchMeterProps = {
   hud: ColorHud;
@@ -18,14 +17,9 @@ export function MatchMeter({ hud }: MatchMeterProps) {
           style={{ width: `${hud.closeness * 100}%` }}
         />
       </div>
-      <p
-        className={cn(
-          "mt-3 text-[14px] leading-6",
-          hud.holding ? "text-foreground" : "text-muted-foreground",
-        )}
-      >
-        {hud.holding ? "稳住" : "对上并稳住，才算过关。"}
-      </p>
+      {hud.holding ? (
+        <p className="mt-3 text-[14px] leading-6 text-foreground">稳住</p>
+      ) : null}
     </section>
   );
 }

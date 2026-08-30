@@ -96,9 +96,9 @@ export function drawPlay(
     ctx.lineWidth = 1;
     ctx.stroke();
   }
-  drawKnob(ctx, a, rgbToCss(colors.a), 22, "A");
-  drawKnob(ctx, b, rgbToCss(colors.b), 22, "B");
-  drawKnob(ctx, c, rgbToCss(colors.c), 22, "C");
+  drawKnob(ctx, a, rgbToCss(colors.a), 11, "A");
+  drawKnob(ctx, b, rgbToCss(colors.b), 11, "B");
+  drawKnob(ctx, c, rgbToCss(colors.c), 11, "C");
 }
 
 export function drawTarget(canvas: HTMLCanvasElement, fill: HTMLCanvasElement) {
