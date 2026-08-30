@@ -5,15 +5,17 @@ import type { Studio } from "@/lib/geometry/studio";
 
 type TriangleStageProps = {
   studio: Studio;
+  holdHint?: boolean;
 };
 
-export function TriangleStage({ studio }: TriangleStageProps) {
+export function TriangleStage({ studio, holdHint }: TriangleStageProps) {
   const { bindCanvas, onPointerDown, onPointerMove, onPointerUp } = studio;
 
   return (
     <div className="flex flex-1 flex-col">
       <p className="mb-3 text-[14px] leading-6 text-muted-foreground">
-        拖三个角。指针在三角形里移动，看重心坐标和颜色怎么变。
+        拖三个角。指针在三角形里滑动，看颜色怎么兑。
+        {holdHint ? " 停在这儿。" : null}
       </p>
       <canvas
         ref={bindCanvas}

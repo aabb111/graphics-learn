@@ -13,7 +13,7 @@ export function HomeHero() {
         拖明白。
       </h1>
       <p className="mt-6 max-w-md text-[14px] leading-6 text-muted-foreground">
-        打开就能玩。现在只有第 1 关：重心坐标如何把三角形涂满。后面的日子留着，方便一关一关往下加。
+        三个顶点的颜色，怎么涂满整个三角形。
       </p>
       <div className="mt-8">
         <Link

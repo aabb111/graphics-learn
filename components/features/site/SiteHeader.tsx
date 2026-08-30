@@ -34,7 +34,7 @@ export function SiteHeader({ className }: SiteHeaderProps) {
               isDay1 ? "text-foreground" : "text-muted-foreground",
             )}
           >
-            第 1 天
+            第 1 关
           </Link>
         </nav>
       </div>

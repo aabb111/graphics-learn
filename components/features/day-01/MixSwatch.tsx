@@ -18,8 +18,17 @@ export function MixSwatch({ hud }: MixSwatchProps) {
         aria-hidden
       />
       <div className="text-[14px] leading-6">
-        <p className="text-foreground">{hud.inside ? "探针上的混合色" : "在外面，先不涂色"}</p>
-        <p className="text-muted-foreground">P = αA + βB + γC</p>
+        {hud.inside ? (
+          <>
+            <p className="text-foreground">这一点的颜色 = 三个角按 αβγ 兑在一起。</p>
+            <p className="text-muted-foreground">P = αA + βB + γC</p>
+          </>
+        ) : (
+          <>
+            <p className="text-foreground">在外面，先不涂色</p>
+            <p className="text-muted-foreground">负的分量 = 在这条边的外侧。</p>
+          </>
+        )}
       </div>
     </div>
   );

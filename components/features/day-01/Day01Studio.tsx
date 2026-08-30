@@ -9,12 +9,14 @@ export function Day01Studio() {
 
   return (
     <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12">
-      <TriangleStage studio={studio} />
+      <TriangleStage
+        studio={studio}
+        holdHint={hud.nearCenter && !hud.pinned && !hud.solved}
+      />
       <CoordPanel
         hud={hud}
         onReset={studio.reset}
         onTogglePin={studio.togglePin}
-        onGoCenter={studio.goCenter}
       />
     </div>
   );

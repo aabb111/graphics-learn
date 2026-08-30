@@ -4,7 +4,6 @@ import {
   barycentric,
   isInside,
   isNearCenter,
-  isNearCentroidPx,
   mixColor,
   signedArea,
   toPx,
@@ -29,6 +28,7 @@ export type StudioHud = {
   mix: RGB;
   solved: boolean;
   pinned: boolean;
+  nearCenter: boolean;
 };
 
 export type Studio = {
@@ -38,7 +38,6 @@ export type Studio = {
   onPointerUp: (event: PointerEvent<HTMLCanvasElement>) => void;
   reset: () => void;
   togglePin: () => void;
-  goCenter: () => void;
 };
 
 const MIN_AREA = 0.045;
@@ -53,6 +52,7 @@ function hudFrom(bc: Barycentric, world: World): StudioHud {
     mix: mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c),
     solved: world.solved,
     pinned: world.pinned,
+    nearCenter: isNearCenter(bc),
   };
 }
 
@@ -78,26 +78,11 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const c = toPx(world.c, next.width, next.height);
     const probe = toPx(world.probe, next.width, next.height);
     const bc = barycentric(probe, a, b, c);
-    if (isNearCenter(bc) || isNearCentroidPx(probe, a, b, c)) {
+    if (world.pinned && isNearCenter(bc)) {
       world.solved = true;
     }
     drawScene(canvas, fill, { a, b, c, probe }, bc, isInside(bc));
     onHud(hudFrom(bc, world));
-  }
-
-  function snapToCentroid() {
-    const next = size();
-    if (!next) return;
-    const a = toPx(world.a, next.width, next.height);
-    const b = toPx(world.b, next.width, next.height);
-    const c = toPx(world.c, next.width, next.height);
-    const probe = toPx(world.probe, next.width, next.height);
-    if (!isNearCentroidPx(probe, a, b, c, 36)) return;
-    world.probe = {
-      x: (world.a.x + world.b.x + world.c.x) / 3,
-      y: (world.a.y + world.b.y + world.c.y) / 3,
-    };
-    world.solved = true;
   }
 
   function place(event: PointerEvent<HTMLCanvasElement>) {
@@ -135,7 +120,6 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       }, toPx(world.probe, placed.next.width, placed.next.height));
       if (hit === "a" || hit === "b" || hit === "c") {
         world.drag = hit;
-        world.pinned = true;
       } else {
         world.drag = "probe";
         world.pinned = true;
@@ -153,7 +137,6 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
         }
       } else if (world.drag === "probe" || !world.pinned) {
         world.probe = placed.norm;
-        if (world.drag === "probe") snapToCentroid();
       }
       sync();
     },
@@ -162,7 +145,6 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
         canvas.releasePointerCapture(event.nativeEvent.pointerId);
       }
       world.drag = null;
-      snapToCentroid();
       sync();
     },
     reset() {
@@ -173,19 +155,11 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       world.probe = next.probe;
       world.pinned = false;
       world.drag = null;
+      world.solved = false;
       sync();
     },
     togglePin() {
       world.pinned = !world.pinned;
-      sync();
-    },
-    goCenter() {
-      world.probe = {
-        x: (world.a.x + world.b.x + world.c.x) / 3,
-        y: (world.a.y + world.b.y + world.c.y) / 3,
-      };
-      world.pinned = true;
-      world.solved = true;
       sync();
     },
   };

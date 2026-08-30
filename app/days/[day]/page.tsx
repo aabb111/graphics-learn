@@ -18,7 +18,7 @@ export async function generateMetadata({
   const { day } = await params;
   const entry = getDay(Number(day));
   if (!entry) return { title: "没有这一关" };
-  return { title: `第 ${entry.day} 天 · ${entry.title}` };
+  return { title: `第 ${entry.day} 关 · ${entry.title}` };
 }
 
 export default async function DayPage({

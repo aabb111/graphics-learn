@@ -12,11 +12,11 @@ export function UpcomingDay({ entry }: UpcomingDayProps) {
   return (
     <section className="mx-auto flex max-w-lg flex-1 flex-col justify-center py-16">
       <p className="text-[11px] tracking-[0.16em] text-muted-foreground">
-        第 {entry.day} 天
+        第 {entry.day} 关
       </p>
-      <h1 className="mt-3 text-[28px] font-normal tracking-tight">{entry.title}</h1>
+      <h1 className="mt-3 text-[28px] font-normal tracking-tight">后面的关还在路上</h1>
       <p className="mt-4 text-[14px] leading-6 text-muted-foreground">
-        这一关还没写。先去第 1 关，把重心坐标拖明白。
+        先去第 1 关，把重心坐标拖明白。
       </p>
       <Link
         href="/days/1"

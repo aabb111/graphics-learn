@@ -31,23 +31,8 @@ export function mixColor(bc: Barycentric, ca: RGB, cb: RGB, cc: RGB): RGB {
   ];
 }
 
-export function centroid(a: Vec2, b: Vec2, c: Vec2): Vec2 {
-  return { x: (a.x + b.x + c.x) / 3, y: (a.y + b.y + c.y) / 3 };
-}
-
-export function isNearCentroidPx(
-  point: Vec2,
-  a: Vec2,
-  b: Vec2,
-  c: Vec2,
-  radius = 32,
-) {
-  const mid = centroid(a, b, c);
-  return Math.hypot(point.x - mid.x, point.y - mid.y) <= radius;
-}
-
 export function isNearCenter(bc: Barycentric) {
-  return !bc.degenerate && isInside(bc) && centerCloseness(bc) >= 0.85;
+  return !bc.degenerate && isInside(bc) && centerCloseness(bc) >= 0.9;
 }
 
 export function centerCloseness(bc: Barycentric) {
@@ -61,8 +46,4 @@ export function centerCloseness(bc: Barycentric) {
 
 export function toPx(p: Vec2, width: number, height: number): Vec2 {
   return { x: p.x * width, y: p.y * height };
-}
-
-export function toNorm(p: Vec2, width: number, height: number): Vec2 {
-  return { x: p.x / width, y: p.y / height };
 }
