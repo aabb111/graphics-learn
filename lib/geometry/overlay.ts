@@ -36,8 +36,25 @@ function drawVertex(ctx: CanvasRenderingContext2D, point: Vec2, fill: string) {
   ctx.stroke();
 }
 
+const RING_R = 10;
+const PALE = { r: 120, g: 170, b: 230 };
+const GREEN = { r: 26, g: 127, b: 75 };
+
 function easeOut(t: number) {
   return 1 - (1 - t) * (1 - t);
+}
+
+function mix(from: number, to: number, t: number) {
+  return from + (to - from) * t;
+}
+
+function cssRgb(
+  from: { r: number; g: number; b: number },
+  to: { r: number; g: number; b: number },
+  t: number,
+  alpha: number,
+) {
+  return `rgb(${mix(from.r, to.r, t)} ${mix(from.g, to.g, t)} ${mix(from.b, to.b, t)} / ${alpha})`;
 }
 
 function drawCentroid(
@@ -51,25 +68,22 @@ function drawCentroid(
 ) {
   const x = (a.x + b.x + c.x) / 3;
   const y = (a.y + b.y + c.y) / 3;
+  ctx.beginPath();
+  ctx.arc(x, y, RING_R, 0, Math.PI * 2);
   if (solved) {
-    const scale = 0.92 + 0.08 * easeOut(winBeat);
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(scale, scale);
-    ctx.beginPath();
-    ctx.arc(0, 0, 10, 0, Math.PI * 2);
-    ctx.fillStyle = "#1A7F4B";
+    const t = easeOut(winBeat);
+    ctx.fillStyle = cssRgb(PALE, GREEN, t, mix(0.22, 1, t));
     ctx.fill();
-    ctx.restore();
+    ctx.strokeStyle = cssRgb(PALE, GREEN, t, mix(0.55, 1, t));
+    ctx.lineWidth = 1.25;
+    ctx.stroke();
     return;
   }
-  ctx.beginPath();
-  ctx.arc(x, y, 10, 0, Math.PI * 2);
   if (ringFill > 0) {
-    ctx.fillStyle = `rgb(120 170 230 / ${0.22 * ringFill})`;
+    ctx.fillStyle = `rgb(${PALE.r} ${PALE.g} ${PALE.b} / ${0.22 * ringFill})`;
     ctx.fill();
   }
-  ctx.strokeStyle = "rgb(120 170 230 / 0.55)";
+  ctx.strokeStyle = `rgb(${PALE.r} ${PALE.g} ${PALE.b} / 0.55)`;
   ctx.lineWidth = 1.25;
   ctx.stroke();
 }
