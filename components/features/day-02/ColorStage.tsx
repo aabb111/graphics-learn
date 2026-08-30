@@ -19,7 +19,7 @@ export function ColorStage({ studio, solved }: ColorStageProps) {
           按住左边一个角转一转，让三个角跟右边一样。
         </p>
       )}
-      <div className="flex items-start gap-5 pt-6">
+      <div className="flex flex-col gap-6">
         <canvas
           ref={bindPlay}
           onPointerDown={onPointerDown}
@@ -27,13 +27,13 @@ export function ColorStage({ studio, solved }: ColorStageProps) {
           onPointerUp={onPointerUp}
           onPointerCancel={onPointerUp}
           className={cn(
-            "aspect-[4/3] min-w-0 flex-1 touch-none bg-[#F4F4F2]",
+            "aspect-[4/3] w-full touch-none bg-[#F4F4F2]",
             "cursor-grab active:cursor-grabbing rounded-sm border border-border/80",
           )}
           aria-label="按住左边一个角转一转，让三个角跟右边一样"
         />
-        <div className="relative w-[40%] shrink-0">
-          <p className="absolute top-0 -translate-y-full pb-2 text-[11px] tracking-[0.16em] text-muted-foreground">
+        <div className="flex w-full flex-col gap-2">
+          <p className="text-[11px] tracking-[0.16em] text-muted-foreground">
             目标
           </p>
           <canvas

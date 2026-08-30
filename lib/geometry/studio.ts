@@ -9,6 +9,7 @@ import {
 } from "@/lib/geometry/barycentric";
 import { VERTEX_RGB } from "@/lib/geometry/colors";
 import { drawScene } from "@/lib/geometry/draw-scene";
+import { draggedPast, holdReady } from "@/lib/geometry/drag-arm";
 import { hitTarget, pointerToCss } from "@/lib/geometry/hit";
 import { createHoldWatch, holdFill } from "@/lib/geometry/hold";
 import type { Barycentric, RGB, VertexId } from "@/lib/geometry/types";
@@ -73,6 +74,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let observer: ResizeObserver | null = null;
   let raf = 0;
   let grab = { x: 0, y: 0 };
+  let press = { x: 0, y: 0 };
   const hold = createHoldWatch(() => sync());
 
   function size() {
@@ -87,7 +89,14 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     if (!next || next.width < 8 || next.height < 8) return;
     fill ??= document.createElement("canvas");
     const { a, b, c, bc } = weightsAtCentroid(world, next.width, next.height);
-    hold.evaluate(world, world.moved && !world.drag && !bc.degenerate);
+    hold.evaluate(
+      world,
+      holdReady({
+        armed: world.armed,
+        dragging: Boolean(world.drag),
+        degenerate: bc.degenerate,
+      }),
+    );
     drawScene(canvas, fill, { a, b, c }, holdFill(world));
     onHud(hudFrom(bc, world));
     if (world.holding && !raf) {
@@ -111,9 +120,8 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     };
     const draft = { ...world, [id]: norm };
     if (Math.abs(signedArea(draft.a, draft.b, draft.c)) < MIN_AREA) return;
-    if (world[id].x === norm.x && world[id].y === norm.y) return;
     world[id] = norm;
-    world.moved = true;
+    if (draggedPast(press, css)) world.armed = true;
   }
 
   return {
@@ -134,6 +142,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       if (!hit) return;
       const origin = hit === "a" ? a : hit === "b" ? b : c;
       grab = { x: placed.css.x - origin.x, y: placed.css.y - origin.y };
+      press = { x: placed.css.x, y: placed.css.y };
       canvas.setPointerCapture(event.nativeEvent.pointerId);
       world.drag = hit;
       sync();
@@ -156,7 +165,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       world.a = next.a;
       world.b = next.b;
       world.c = next.c;
-      world.moved = false;
+      world.armed = false;
       world.drag = null;
       world.holding = false;
       world.holdFrom = 0;
