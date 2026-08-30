@@ -111,8 +111,10 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
         ? 1
         : Math.min(1, (performance.now() - winFrom) / WIN_BEAT_MS)
       : 0;
-    const ringFill = ready && !world.solved ? holdFill(world) : 0;
-    drawScene(canvas, fill, { a, b, c, sample }, ringFill, world.solved, winBeat);
+    const mix = mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c);
+    const ringFill =
+      ready && !world.solved ? (reduced ? 1 : holdFill(world)) : 0;
+    drawScene(canvas, fill, { a, b, c, sample }, mix, ringFill, world.solved, winBeat);
     onHud(hudFrom(bc, world));
     if ((world.holding || (world.solved && winBeat < 1)) && !raf) {
       raf = requestAnimationFrame(() => {

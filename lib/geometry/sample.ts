@@ -2,7 +2,7 @@ import { barycentric, isInside } from "@/lib/geometry/barycentric";
 import type { Vec2 } from "@/lib/geometry/types";
 
 export const TARGET_RING_R = 10;
-export const SAMPLE_R = 6;
+export const SAMPLE_R = 7;
 export const SAMPLE_HIT_R = 14;
 
 export const SPAWN_WEIGHTS = {

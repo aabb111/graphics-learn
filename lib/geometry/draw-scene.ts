@@ -1,6 +1,6 @@
 import { drawOverlay } from "@/lib/geometry/overlay";
 import { rasterizeTriangle } from "@/lib/geometry/rasterize";
-import type { Vec2 } from "@/lib/geometry/types";
+import type { RGB, Vec2 } from "@/lib/geometry/types";
 
 export function sizeCanvas(canvas: HTMLCanvasElement) {
   const rect = canvas.getBoundingClientRect();
@@ -18,6 +18,7 @@ export function drawScene(
   canvas: HTMLCanvasElement,
   fill: HTMLCanvasElement,
   points: { a: Vec2; b: Vec2; c: Vec2; sample: Vec2 },
+  mix: RGB,
   ringFill = 0,
   solved = false,
   winBeat = 1,
@@ -40,5 +41,5 @@ export function drawScene(
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
   ctx.drawImage(fill, 0, 0, cssW, cssH);
-  drawOverlay(ctx, { ...points, ringFill, solved, winBeat });
+  drawOverlay(ctx, { ...points, mix, ringFill, solved, winBeat });
 }
