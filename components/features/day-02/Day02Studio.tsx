@@ -9,7 +9,7 @@ export function Day02Studio() {
 
   return (
     <div className="flex flex-1 flex-col gap-8 lg:flex-row lg:items-start lg:gap-12">
-      <ColorStage studio={studio} holding={hud.holding} />
+      <ColorStage studio={studio} />
       <ColorPanel hud={hud} onReset={studio.reset} />
     </div>
   );

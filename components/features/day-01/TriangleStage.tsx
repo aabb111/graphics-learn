@@ -25,7 +25,7 @@ export function TriangleStage({ studio, holdHint }: TriangleStageProps) {
         onPointerCancel={onPointerUp}
         className={cn(
           "h-[min(58vh,560px)] w-full touch-none bg-[#F4F4F2]",
-          "cursor-crosshair rounded-sm border border-border/80",
+            "cursor-grab active:cursor-grabbing rounded-sm border border-border/80",
         )}
         aria-label="可拖拽顶点的三角形画布"
       />

@@ -10,7 +10,7 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ className }: SiteHeaderProps) {
-  const { isDay1, isDay2, maxWidth } = useShellMax();
+  const { currentLevel, maxWidth } = useShellMax();
 
   return (
     <header className={cn("border-b border-border/80", className)}>
@@ -27,24 +27,9 @@ export function SiteHeader({ className }: SiteHeaderProps) {
           <Link href="/days" className="transition-colors hover:text-foreground">
             关卡列表
           </Link>
-          <Link
-            href="/days/1"
-            className={cn(
-              "transition-colors hover:text-foreground",
-              isDay1 ? "text-foreground" : "text-muted-foreground",
-            )}
-          >
-            第 1 关
-          </Link>
-          <Link
-            href="/days/2"
-            className={cn(
-              "transition-colors hover:text-foreground",
-              isDay2 ? "text-foreground" : "text-muted-foreground",
-            )}
-          >
-            第 2 关
-          </Link>
+          {currentLevel ? (
+            <span className="text-foreground">第 {currentLevel} 关</span>
+          ) : null}
         </nav>
       </div>
     </header>

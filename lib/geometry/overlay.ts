@@ -85,8 +85,8 @@ export function drawOverlay(ctx: CanvasRenderingContext2D, input: OverlayInput) 
   drawProbe(ctx, probe, mix, inside && !degenerate);
 
   if (!inside && !degenerate) {
-    ctx.font = "400 12px var(--font-sans), sans-serif";
-    ctx.fillStyle = "rgb(20 20 20 / 0.46)";
+    ctx.font = "400 13px var(--font-sans), sans-serif";
+    ctx.fillStyle = "rgb(20 20 20 / 0.72)";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillText("在外面", probe.x + 14, probe.y);

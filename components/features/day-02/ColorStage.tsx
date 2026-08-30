@@ -5,10 +5,9 @@ import type { ColorStudio } from "@/lib/day-02/studio";
 
 type ColorStageProps = {
   studio: ColorStudio;
-  holding: boolean;
 };
 
-export function ColorStage({ studio, holding }: ColorStageProps) {
+export function ColorStage({ studio }: ColorStageProps) {
   const { bindPlay, bindTarget, onPointerDown, onPointerMove, onPointerUp } =
     studio;
 
@@ -16,7 +15,6 @@ export function ColorStage({ studio, holding }: ColorStageProps) {
     <div className="flex min-w-0 flex-1 flex-col">
       <p className="mb-3 text-[14px] leading-6 text-muted-foreground">
         拖三个顶点上的颜色，让三角里的渐变对上右边的目标。
-        {holding ? " 稳住。" : null}
       </p>
       <div className="flex items-start gap-5 pt-6">
         <canvas
@@ -27,7 +25,7 @@ export function ColorStage({ studio, holding }: ColorStageProps) {
           onPointerCancel={onPointerUp}
           className={cn(
             "aspect-[4/3] min-w-0 flex-1 touch-none bg-[#F4F4F2]",
-            "cursor-crosshair rounded-sm border border-border/80",
+            "cursor-grab active:cursor-grabbing rounded-sm border border-border/80",
           )}
           aria-label="可调顶点颜色的三角形"
         />

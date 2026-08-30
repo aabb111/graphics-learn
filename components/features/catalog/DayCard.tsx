@@ -20,7 +20,9 @@ export function DayCard({ entry }: DayCardProps) {
             <span className="size-2 rounded-full" style={{ background: entry.accents[1] }} />
             <span className="size-2 rounded-full" style={{ background: entry.accents[2] }} />
           </span>
-          <h2 className="text-[28px] font-normal tracking-tight">{entry.title}</h2>
+          <h2 className="text-[22px] font-normal tracking-tight md:text-[26px]">
+            {entry.title}
+          </h2>
         </div>
         <span className="shrink-0 text-[14px] leading-6">去玩</span>
       </div>
