@@ -10,7 +10,9 @@ export type HueRingLook = {
 
 const RING_R = 36;
 const BAND = 8;
+const TICK = 6;
 const STEPS = 72;
+const MID_R = RING_R - BAND / 2;
 
 function easeOut(t: number) {
   return 1 - (1 - t) * (1 - t);
@@ -37,16 +39,16 @@ export function drawHueRing(ctx: CanvasRenderingContext2D, look: HueRingLook) {
   ctx.translate(origin.x, origin.y);
   ctx.scale(scale, scale);
   ctx.globalAlpha = opacity;
+  ctx.lineCap = "butt";
 
   for (let i = 0; i < STEPS; i += 1) {
     const a0 = (i / STEPS) * Math.PI * 2;
-    const a1 = ((i + 1) / STEPS) * Math.PI * 2;
+    const a1 = ((i + 1.05) / STEPS) * Math.PI * 2;
     ctx.beginPath();
-    ctx.arc(0, 0, RING_R, a0, a1);
-    ctx.arc(0, 0, RING_R - BAND, a1, a0, true);
-    ctx.closePath();
-    ctx.fillStyle = rgbToCss(hslToRgb(((i + 0.5) / STEPS) * 360));
-    ctx.fill();
+    ctx.arc(0, 0, MID_R, a0, a1);
+    ctx.strokeStyle = rgbToCss(hslToRgb(((i + 0.5) / STEPS) * 360));
+    ctx.lineWidth = BAND;
+    ctx.stroke();
   }
 
   ctx.beginPath();
@@ -58,10 +60,9 @@ export function drawHueRing(ctx: CanvasRenderingContext2D, look: HueRingLook) {
   const rad = (hue * Math.PI) / 180;
   ctx.beginPath();
   ctx.moveTo(Math.cos(rad) * RING_R, Math.sin(rad) * RING_R);
-  ctx.lineTo(Math.cos(rad) * (RING_R - 6), Math.sin(rad) * (RING_R - 6));
+  ctx.lineTo(Math.cos(rad) * (RING_R - TICK), Math.sin(rad) * (RING_R - TICK));
   ctx.strokeStyle = "#141414";
   ctx.lineWidth = 2;
-  ctx.lineCap = "butt";
   ctx.stroke();
   ctx.restore();
 }

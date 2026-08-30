@@ -89,8 +89,6 @@ export function drawPlay(
   const painted = paintFill(canvas, fill, hues);
   if (!painted) return;
   const { ctx, a, b, c } = painted;
-  const { dpr } = sizeCanvas(canvas);
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const colors = huesToColors(hues);
   if (ring) drawHueRing(ctx, ring);
   drawKnob(ctx, a, rgbToCss(colors.a), PLAY_KNOB_R, "A");

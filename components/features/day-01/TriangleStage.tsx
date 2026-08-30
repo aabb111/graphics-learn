@@ -14,7 +14,7 @@ export function TriangleStage({ studio, solved }: TriangleStageProps) {
   return (
     <div className="flex flex-1 flex-col">
       {solved ? null : (
-        <p className="mb-3 text-[14px] leading-6 text-foreground">
+        <p className="mb-3 text-[14px] leading-6 text-foreground break-keep">
           拖三个角，看中间那三个数。
         </p>
       )}
