@@ -10,6 +10,7 @@ import { VERTEX_RGB } from "@/lib/geometry/colors";
 import { drawScene } from "@/lib/geometry/draw-scene";
 import { hitPoint, pointerToCss } from "@/lib/geometry/hit";
 import { createHoldWatch, holdFill } from "@/lib/geometry/hold";
+import { createOffsetHandle, isOffsetPointer } from "@/lib/geometry/offset-handle";
 import {
   clampToTriangle,
   inTargetRing,
@@ -84,6 +85,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let grab = { x: 0, y: 0 };
   let winFrom = 0;
   const hold = createHoldWatch(() => sync());
+  const offset = createOffsetHandle();
 
   function size() {
     if (!canvas) return null;
@@ -101,6 +103,15 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const next = size();
     if (!next || next.width < 8 || next.height < 8) return;
     fill ??= document.createElement("canvas");
+    const verts = {
+      a: toPx(world.a, next.width, next.height),
+      b: toPx(world.b, next.width, next.height),
+      c: toPx(world.c, next.width, next.height),
+    };
+    const lifted = offset.place(verts.a, verts.b, verts.c);
+    if (lifted) {
+      world.sample = { x: lifted.x / next.width, y: lifted.y / next.height };
+    }
     const { a, b, c, sample, centroid, bc } = layout(world, next.width, next.height);
     const ready = inTargetRing(sample, centroid) && !world.dragging && !bc.degenerate;
     hold.evaluate(world, ready);
@@ -114,9 +125,18 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const mix = mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c);
     const ringFill =
       ready && !world.solved ? (reduced ? 1 : holdFill(world)) : 0;
-    drawScene(canvas, fill, { a, b, c, sample }, mix, ringFill, world.solved, winBeat);
+    drawScene(
+      canvas,
+      fill,
+      { a, b, c, sample },
+      mix,
+      ringFill,
+      world.solved,
+      winBeat,
+      offset.stem(),
+    );
     onHud(hudFrom(bc, world));
-    if ((world.holding || (world.solved && winBeat < 1)) && !raf) {
+    if ((world.holding || (world.solved && winBeat < 1) || offset.pulsing()) && !raf) {
       raf = requestAnimationFrame(() => {
         raf = 0;
         sync();
@@ -132,6 +152,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
 
   function lift(id: number) {
     if (canvas?.hasPointerCapture(id)) canvas.releasePointerCapture(id);
+    if (offset.active()) offset.end();
     world.dragging = false;
     sync();
   }
@@ -154,7 +175,11 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
         paintCursor(false);
         return;
       }
-      grab = { x: placed.css.x - sample.x, y: placed.css.y - sample.y };
+      if (isOffsetPointer(event.nativeEvent.pointerType)) {
+        offset.begin(sample, placed.css);
+      } else {
+        grab = { x: placed.css.x - sample.x, y: placed.css.y - sample.y };
+      }
       world.dragging = true;
       paintCursor(true);
       try {
@@ -168,7 +193,9 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       const placed = place(event);
       if (!placed) return;
       const { a, b, c, sample } = layout(world, placed.next.width, placed.next.height);
-      if (world.dragging) {
+      if (world.dragging && offset.active()) {
+        offset.move(placed.css);
+      } else if (world.dragging) {
         const next = clampToTriangle(
           { x: placed.css.x - grab.x, y: placed.css.y - grab.y },
           a,
@@ -192,6 +219,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     reset() {
       const next = cloneWorld();
       world.sample = spawnSample(next.a, next.b, next.c);
+      offset.reset();
       world.dragging = false;
       world.holding = false;
       world.holdFrom = 0;

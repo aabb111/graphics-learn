@@ -11,6 +11,7 @@ type OverlayInput = {
   ringFill: number;
   solved?: boolean;
   winBeat?: number;
+  stem?: { contact: Vec2; opacity: number } | null;
 };
 
 const VERTEX_R = 3;
@@ -55,6 +56,21 @@ function cssRgb(
   alpha: number,
 ) {
   return `rgb(${mix(from.r, to.r, t)} ${mix(from.g, to.g, t)} ${mix(from.b, to.b, t)} / ${alpha})`;
+}
+
+function drawStem(
+  ctx: CanvasRenderingContext2D,
+  contact: Vec2,
+  sample: Vec2,
+  opacity: number,
+) {
+  if (opacity <= 0) return;
+  ctx.beginPath();
+  ctx.moveTo(contact.x, contact.y);
+  ctx.lineTo(sample.x, sample.y);
+  ctx.strokeStyle = `rgb(20 20 20 / ${0.22 * opacity})`;
+  ctx.lineWidth = 1;
+  ctx.stroke();
 }
 
 function drawSample(ctx: CanvasRenderingContext2D, point: Vec2, fill: RGB) {
@@ -102,6 +118,9 @@ export function drawOverlay(ctx: CanvasRenderingContext2D, input: OverlayInput) 
   const { a, b, c, sample, mix: sampleMix } = input;
   strokeTriangle(ctx, a, b, c);
   drawCentroid(ctx, a, b, c, input.ringFill, Boolean(input.solved), input.winBeat ?? 1);
+  if (!input.solved && input.stem) {
+    drawStem(ctx, input.stem.contact, sample, input.stem.opacity);
+  }
   if (!input.solved) drawSample(ctx, sample, sampleMix);
   drawVertex(ctx, a, VERTEX_HEX.a);
   drawVertex(ctx, b, VERTEX_HEX.b);

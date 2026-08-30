@@ -22,6 +22,7 @@ export function drawScene(
   ringFill = 0,
   solved = false,
   winBeat = 1,
+  stem: { contact: Vec2; opacity: number } | null = null,
 ) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const fillW = Math.max(1, Math.round(cssW));
@@ -41,5 +42,5 @@ export function drawScene(
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
   ctx.drawImage(fill, 0, 0, cssW, cssH);
-  drawOverlay(ctx, { ...points, mix, ringFill, solved, winBeat });
+  drawOverlay(ctx, { ...points, mix, ringFill, solved, winBeat, stem });
 }
