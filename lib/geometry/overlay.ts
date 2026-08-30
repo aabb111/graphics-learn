@@ -6,6 +6,8 @@ type OverlayInput = {
   b: Vec2;
   c: Vec2;
   ringFill: number;
+  solved?: boolean;
+  winBeat?: number;
 };
 
 function strokeTriangle(
@@ -34,15 +36,33 @@ function drawVertex(ctx: CanvasRenderingContext2D, point: Vec2, fill: string) {
   ctx.stroke();
 }
 
+function easeOut(t: number) {
+  return 1 - (1 - t) * (1 - t);
+}
+
 function drawCentroid(
   ctx: CanvasRenderingContext2D,
   a: Vec2,
   b: Vec2,
   c: Vec2,
   ringFill: number,
+  solved: boolean,
+  winBeat: number,
 ) {
   const x = (a.x + b.x + c.x) / 3;
   const y = (a.y + b.y + c.y) / 3;
+  if (solved) {
+    const scale = 0.92 + 0.08 * easeOut(winBeat);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+    ctx.beginPath();
+    ctx.arc(0, 0, 10, 0, Math.PI * 2);
+    ctx.fillStyle = "#1A7F4B";
+    ctx.fill();
+    ctx.restore();
+    return;
+  }
   ctx.beginPath();
   ctx.arc(x, y, 10, 0, Math.PI * 2);
   if (ringFill > 0) {
@@ -57,7 +77,7 @@ function drawCentroid(
 export function drawOverlay(ctx: CanvasRenderingContext2D, input: OverlayInput) {
   const { a, b, c } = input;
   strokeTriangle(ctx, a, b, c);
-  drawCentroid(ctx, a, b, c, input.ringFill);
+  drawCentroid(ctx, a, b, c, input.ringFill, Boolean(input.solved), input.winBeat ?? 1);
   drawVertex(ctx, a, VERTEX_HEX.a);
   drawVertex(ctx, b, VERTEX_HEX.b);
   drawVertex(ctx, c, VERTEX_HEX.c);

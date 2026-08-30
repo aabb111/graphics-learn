@@ -19,6 +19,8 @@ export function drawScene(
   fill: HTMLCanvasElement,
   points: { a: Vec2; b: Vec2; c: Vec2 },
   ringFill = 0,
+  solved = false,
+  winBeat = 1,
 ) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const fillW = Math.max(1, Math.round(cssW));
@@ -38,5 +40,5 @@ export function drawScene(
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
   ctx.drawImage(fill, 0, 0, cssW, cssH);
-  drawOverlay(ctx, { ...points, ringFill });
+  drawOverlay(ctx, { ...points, ringFill, solved, winBeat });
 }

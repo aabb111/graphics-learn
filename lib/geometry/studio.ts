@@ -76,7 +76,9 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let observer: ResizeObserver | null = null;
   let raf = 0;
   let grab = { x: 0, y: 0 };
+  let winFrom = 0;
   const hold = createHoldWatch(() => sync());
+  const WIN_BEAT_MS = 220;
 
   function size() {
     if (!canvas) return null;
@@ -89,12 +91,21 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const next = size();
     if (!next || next.width < 8 || next.height < 8) return;
     fill ??= document.createElement("canvas");
+    gesture.captureHome(world);
     const { a, b, c, bc } = weightsAtCentroid(world, next.width, next.height);
     const ready = gesture.canHold() && !bc.degenerate;
     hold.evaluate(world, ready);
-    drawScene(canvas, fill, { a, b, c }, ready || world.solved ? holdFill(world) : 0);
+    if (world.solved && !winFrom) winFrom = performance.now();
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const winBeat = world.solved
+      ? reduced
+        ? 1
+        : Math.min(1, (performance.now() - winFrom) / WIN_BEAT_MS)
+      : 0;
+    const ringFill = ready && !world.solved ? holdFill(world) : 0;
+    drawScene(canvas, fill, { a, b, c }, ringFill, world.solved, winBeat);
     onHud(hudFrom(bc, world));
-    if (world.holding && !raf) {
+    if ((world.holding || (world.solved && winBeat < 1)) && !raf) {
       raf = requestAnimationFrame(() => {
         raf = 0;
         sync();
@@ -137,7 +148,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       if (!hit) return;
       const origin = hit === "a" ? a : hit === "b" ? b : c;
       grab = { x: placed.css.x - origin.x, y: placed.css.y - origin.y };
-      gesture.down(event.nativeEvent.pointerId, origin);
+      gesture.down(event.nativeEvent.pointerId);
       canvas.setPointerCapture(event.nativeEvent.pointerId);
       world.drag = hit;
       sync();
@@ -145,8 +156,9 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     onPointerMove(event) {
       const placed = place(event);
       if (!placed || !world.drag) return;
-      const next = moveVertex(world.drag, placed.css, placed.next.width, placed.next.height);
-      if (next) gesture.move(event.nativeEvent.pointerId, next);
+      if (moveVertex(world.drag, placed.css, placed.next.width, placed.next.height)) {
+        gesture.mark(world.drag, world[world.drag], placed.next.width, placed.next.height);
+      }
       sync();
     },
     onPointerUp(event) {
@@ -176,6 +188,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       world.holding = false;
       world.holdFrom = 0;
       world.solved = false;
+      winFrom = 0;
       gesture.reset();
       hold.stop();
       if (raf) cancelAnimationFrame(raf);

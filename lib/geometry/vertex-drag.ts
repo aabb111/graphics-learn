@@ -1,47 +1,53 @@
 import { draggedPast } from "@/lib/geometry/drag-arm";
-import type { Vec2 } from "@/lib/geometry/types";
+import type { Vec2, VertexId } from "@/lib/geometry/types";
+
+export const VERTEX_TRAVEL_PX = 40;
+
+type Homes = { a: Vec2; b: Vec2; c: Vec2 };
 
 export function createVertexDrag() {
   let pointerId: number | null = null;
-  let origin: Vec2 = { x: 0, y: 0 };
-  let armed = false;
-  let mayHold = false;
+  let homes: Homes | null = null;
+  let moved: Record<VertexId, boolean> = { a: false, b: false, c: false };
 
   return {
-    down(id: number, vertex: Vec2) {
-      pointerId = id;
-      origin = { x: vertex.x, y: vertex.y };
-      armed = false;
-      mayHold = false;
+    captureHome(points: Homes) {
+      if (homes) return;
+      homes = {
+        a: { ...points.a },
+        b: { ...points.b },
+        c: { ...points.c },
+      };
     },
-    move(id: number, vertex: Vec2) {
-      if (pointerId !== id) return false;
-      if (draggedPast(origin, vertex)) armed = true;
-      return armed;
+    down(id: number) {
+      pointerId = id;
+    },
+    mark(id: VertexId, current: Vec2, width: number, height: number) {
+      if (!homes) return;
+      const home = homes[id];
+      const travel = {
+        x: (current.x - home.x) * width,
+        y: (current.y - home.y) * height,
+      };
+      if (draggedPast({ x: 0, y: 0 }, travel, VERTEX_TRAVEL_PX)) {
+        moved[id] = true;
+      }
     },
     up(id: number) {
-      if (pointerId !== id) return false;
-      mayHold = armed;
+      if (pointerId !== id) return;
       pointerId = null;
-      armed = false;
-      return mayHold;
     },
     cancel(id: number) {
       if (pointerId !== id) return;
       pointerId = null;
-      armed = false;
-      mayHold = false;
     },
     reset() {
       pointerId = null;
-      armed = false;
-      mayHold = false;
-    },
-    isDown() {
-      return pointerId !== null;
+      homes = null;
+      moved = { a: false, b: false, c: false };
     },
     canHold() {
-      return mayHold && pointerId === null;
+      return moved.a && moved.b && moved.c && pointerId === null;
     },
   };
 }
