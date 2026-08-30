@@ -11,8 +11,8 @@ export function TriangleStage({ studio }: TriangleStageProps) {
   const { bindCanvas, onPointerDown, onPointerMove, onPointerUp } = studio;
 
   return (
-    <div className="flex min-h-[420px] flex-1 flex-col">
-      <p className="mb-3 text-[12px] leading-6 text-muted-foreground">
+    <div className="flex flex-1 flex-col">
+      <p className="mb-3 text-[14px] leading-6 text-muted-foreground">
         拖三个角。指针在三角形里移动，看重心坐标和颜色怎么变。
       </p>
       <canvas
@@ -22,7 +22,7 @@ export function TriangleStage({ studio }: TriangleStageProps) {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
         className={cn(
-          "h-[min(68vh,640px)] w-full touch-none bg-white",
+          "h-[min(58vh,560px)] w-full touch-none bg-[#F4F4F2]",
           "cursor-crosshair rounded-sm border border-border/80",
         )}
         aria-label="可拖拽顶点的三角形画布"

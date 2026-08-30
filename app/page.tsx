@@ -7,7 +7,7 @@ export default function HomePage() {
   return (
     <div className="flex min-h-full flex-col">
       <SiteHeader />
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-16 px-5 py-10 md:px-8 md:py-16">
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-12 px-5 py-10 md:px-8 md:py-16">
         <HomeHero />
         <DayList />
       </main>

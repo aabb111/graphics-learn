@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 
+import { useShellMax } from "@/hooks/use-shell-max";
 import { cn } from "@/lib/utils";
 
 type SiteHeaderProps = {
@@ -7,25 +10,34 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ className }: SiteHeaderProps) {
+  const { isDay1, maxWidth } = useShellMax();
+
   return (
-    <header
-      className={cn(
-        "flex items-center justify-between gap-6 border-b border-border/80",
-        "px-5 py-4 md:px-8",
-        className,
-      )}
-    >
-      <Link href="/" className="text-[13px] font-medium tracking-[0.14em] text-foreground">
-        图形学
-      </Link>
-      <nav className="flex items-center gap-5 text-[13px] text-muted-foreground">
-        <Link href="/days" className="transition-colors hover:text-foreground">
-          关卡列表
+    <header className={cn("border-b border-border/80", className)}>
+      <div
+        className={cn(
+          "mx-auto flex w-full items-center justify-between gap-6 px-5 py-4 md:px-8",
+          maxWidth,
+        )}
+      >
+        <Link href="/" className="text-[14px] font-medium text-foreground">
+          图形学
         </Link>
-        <Link href="/days/1" className="text-foreground transition-colors hover:text-primary">
-          第 1 天
-        </Link>
-      </nav>
+        <nav className="flex items-center gap-5 text-[14px] leading-6 text-muted-foreground">
+          <Link href="/days" className="transition-colors hover:text-foreground">
+            关卡列表
+          </Link>
+          <Link
+            href="/days/1"
+            className={cn(
+              "transition-colors hover:text-foreground",
+              isDay1 ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
+            第 1 天
+          </Link>
+        </nav>
+      </div>
     </header>
   );
 }

@@ -14,8 +14,8 @@ export function UpcomingDay({ entry }: UpcomingDayProps) {
       <p className="text-[11px] tracking-[0.16em] text-muted-foreground">
         第 {entry.day} 天
       </p>
-      <h1 className="mt-3 text-[32px] font-normal tracking-tight">{entry.title}</h1>
-      <p className="mt-4 text-[15px] leading-7 text-muted-foreground">
+      <h1 className="mt-3 text-[28px] font-normal tracking-tight">{entry.title}</h1>
+      <p className="mt-4 text-[14px] leading-6 text-muted-foreground">
         这一关还没写。先去第 1 关，把重心坐标拖明白。
       </p>
       <Link

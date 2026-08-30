@@ -34,18 +34,18 @@ function drawVertex(
   label: string,
 ) {
   ctx.beginPath();
-  ctx.arc(point.x, point.y, 7, 0, Math.PI * 2);
+  ctx.arc(point.x, point.y, 10, 0, Math.PI * 2);
   ctx.fillStyle = fill;
   ctx.fill();
-  ctx.lineWidth = 1.5;
+  ctx.lineWidth = 2;
   ctx.strokeStyle = "#fff";
   ctx.stroke();
 
-  ctx.font = "500 11px var(--font-sans), sans-serif";
-  ctx.fillStyle = "rgb(20 20 20 / 0.72)";
+  ctx.font = "500 12px var(--font-sans), sans-serif";
+  ctx.fillStyle = fill;
   ctx.textAlign = "center";
   ctx.textBaseline = "bottom";
-  ctx.fillText(label, point.x, point.y - 11);
+  ctx.fillText(label, point.x, point.y - 14);
 }
 
 function drawProbe(
@@ -69,14 +69,10 @@ function drawCentroid(ctx: CanvasRenderingContext2D, a: Vec2, b: Vec2, c: Vec2) 
   const x = (a.x + b.x + c.x) / 3;
   const y = (a.y + b.y + c.y) / 3;
   ctx.beginPath();
-  ctx.arc(x, y, 6, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgb(47 79 224 / 0.45)";
+  ctx.arc(x, y, 10, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgb(20 20 20 / 0.45)";
   ctx.lineWidth = 1.25;
   ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(x, y, 1.25, 0, Math.PI * 2);
-  ctx.fillStyle = "rgb(47 79 224 / 0.7)";
-  ctx.fill();
 }
 
 export function drawOverlay(ctx: CanvasRenderingContext2D, input: OverlayInput) {
