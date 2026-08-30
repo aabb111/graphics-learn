@@ -1,4 +1,10 @@
-const HOLD_MS = 1000;
+export const HOLD_MS = 1000;
+
+export function holdFill(state: { holdFrom: number; solved: boolean }) {
+  if (state.solved) return 1;
+  if (!state.holdFrom) return 0;
+  return Math.min(1, (performance.now() - state.holdFrom) / HOLD_MS);
+}
 
 type HoldState = {
   holding: boolean;

@@ -11,7 +11,7 @@ import {
 import { VERTEX_RGB } from "@/lib/geometry/colors";
 import { drawScene } from "@/lib/geometry/draw-scene";
 import { hitTarget, pointerToCss } from "@/lib/geometry/hit";
-import { createHoldWatch } from "@/lib/geometry/hold";
+import { createHoldWatch, holdFill } from "@/lib/geometry/hold";
 import type { Barycentric, RGB } from "@/lib/geometry/types";
 import {
   clampNorm,
@@ -63,6 +63,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let fill: HTMLCanvasElement | null = null;
   let canvas: HTMLCanvasElement | null = null;
   let observer: ResizeObserver | null = null;
+  let raf = 0;
   const hold = createHoldWatch(() => sync());
 
   function size() {
@@ -82,8 +83,14 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const probe = toPx(world.probe, next.width, next.height);
     const bc = barycentric(probe, a, b, c);
     hold.evaluate(world, isNearCenter(bc));
-    drawScene(canvas, fill, { a, b, c, probe }, bc, isInside(bc));
+    drawScene(canvas, fill, { a, b, c, probe }, bc, isInside(bc), holdFill(world));
     onHud(hudFrom(bc, world));
+    if (world.holding && !raf) {
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        sync();
+      });
+    }
   }
 
   function place(event: PointerEvent<HTMLCanvasElement>) {
@@ -170,6 +177,8 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       world.holdFrom = 0;
       world.solved = false;
       hold.stop();
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
       sync();
     },
   };

@@ -1,3 +1,4 @@
+import { HoldHint } from "@/components/features/motion/HoldHint";
 import { centerCloseness } from "@/lib/geometry/barycentric";
 import type { StudioHud } from "@/lib/geometry/studio";
 
@@ -25,9 +26,7 @@ export function ChallengeCard({ hud }: ChallengeCardProps) {
           style={{ width: `${closeness * 100}%` }}
         />
       </div>
-      {hud.holding ? (
-        <p className="mt-3 text-[14px] leading-6 text-foreground">停在这儿</p>
-      ) : null}
+      <HoldHint show={hud.holding} />
     </section>
   );
 }

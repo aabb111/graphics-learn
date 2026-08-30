@@ -22,6 +22,7 @@ export function drawScene(
   points: { a: Vec2; b: Vec2; c: Vec2; probe: Vec2 },
   bc: Barycentric,
   inside: boolean,
+  ringFill = 0,
 ) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const fillW = Math.max(1, Math.round(cssW));
@@ -48,5 +49,6 @@ export function drawScene(
     mix,
     inside,
     degenerate: bc.degenerate,
+    ringFill,
   });
 }

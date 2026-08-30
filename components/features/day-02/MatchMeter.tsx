@@ -1,3 +1,4 @@
+import { HoldHint } from "@/components/features/motion/HoldHint";
 import type { ColorHud } from "@/lib/day-02/studio";
 
 type MatchMeterProps = {
@@ -17,9 +18,7 @@ export function MatchMeter({ hud }: MatchMeterProps) {
           style={{ width: `${hud.closeness * 100}%` }}
         />
       </div>
-      {hud.holding ? (
-        <p className="mt-3 text-[14px] leading-6 text-foreground">稳住</p>
-      ) : null}
+      <HoldHint show={hud.holding} />
     </section>
   );
 }
