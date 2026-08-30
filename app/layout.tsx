@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "图形学 · 每天一关",
-  description: "用手把图形学拖明白。第 1 关：重心坐标把三角形涂满。",
+  description: "用手把图形学拖明白。现在可以玩第 1 关和第 2 关。",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

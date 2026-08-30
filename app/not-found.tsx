@@ -13,13 +13,13 @@ export default function NotFound() {
         <p className="text-[11px] tracking-[0.16em] text-muted-foreground">没有这一页</p>
         <h1 className="mt-3 text-[28px] font-normal tracking-tight">走错关了</h1>
         <p className="mt-4 text-[14px] leading-6 text-muted-foreground">
-          现在能玩的只有第 1 关。
+          现在能玩的是第 1 关和第 2 关。
         </p>
         <Link
-          href="/days/1"
+          href="/"
           className={cn(buttonVariants({ size: "lg" }), "mt-8 w-fit rounded-full px-5")}
         >
-          去第 1 关
+          回首页
         </Link>
       </main>
       <SiteFooter />

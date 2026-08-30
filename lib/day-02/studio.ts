@@ -93,7 +93,11 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
       const css = pointerToCss(event.nativeEvent, play);
       const hit = hitVertex(css, rect.width, rect.height);
       if (!hit) return;
-      play.setPointerCapture(event.nativeEvent.pointerId);
+      try {
+        play.setPointerCapture(event.nativeEvent.pointerId);
+      } catch {
+        /* synthetic pointer or already released */
+      }
       world.drag = hit;
       const hue = pointerHue(toPx(TRIANGLE[hit], rect.width, rect.height), css);
       if (hue !== null) world.hues[hit] = hue;
