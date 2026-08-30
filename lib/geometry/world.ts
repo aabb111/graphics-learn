@@ -1,20 +1,27 @@
-import type { Vec2, VertexId } from "@/lib/geometry/types";
+import { spawnSample } from "@/lib/geometry/sample";
+import type { Vec2 } from "@/lib/geometry/types";
 
 export type World = {
   a: Vec2;
   b: Vec2;
   c: Vec2;
-  drag: VertexId | null;
+  sample: Vec2;
+  dragging: boolean;
   holding: boolean;
   holdFrom: number;
   solved: boolean;
 };
 
+const A: Vec2 = { x: 0.5, y: 0.18 };
+const B: Vec2 = { x: 0.18, y: 0.82 };
+const C: Vec2 = { x: 0.84, y: 0.78 };
+
 export const DEFAULT_WORLD: World = {
-  a: { x: 0.5, y: 0.18 },
-  b: { x: 0.18, y: 0.82 },
-  c: { x: 0.84, y: 0.78 },
-  drag: null,
+  a: A,
+  b: B,
+  c: C,
+  sample: spawnSample(A, B, C),
+  dragging: false,
   holding: false,
   holdFrom: 0,
   solved: false,
@@ -25,7 +32,8 @@ export function cloneWorld(world: World = DEFAULT_WORLD): World {
     a: { ...world.a },
     b: { ...world.b },
     c: { ...world.c },
-    drag: world.drag,
+    sample: { ...world.sample },
+    dragging: world.dragging,
     holding: world.holding,
     holdFrom: world.holdFrom,
     solved: world.solved,
@@ -37,8 +45,4 @@ export function centroidOf(a: Vec2, b: Vec2, c: Vec2): Vec2 {
     x: (a.x + b.x + c.x) / 3,
     y: (a.y + b.y + c.y) / 3,
   };
-}
-
-export function clampNorm(value: number, pad = 0.03) {
-  return Math.min(1 - pad, Math.max(pad, value));
 }

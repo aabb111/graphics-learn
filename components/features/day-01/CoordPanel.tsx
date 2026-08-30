@@ -1,4 +1,3 @@
-import { CornerProgress } from "@/components/features/day-01/CornerProgress";
 import { LessonNote } from "@/components/features/lesson/LessonNote";
 import { HoldHint } from "@/components/features/motion/HoldHint";
 import { WeightBars } from "@/components/features/day-01/WeightBars";
@@ -25,9 +24,8 @@ export function CoordPanel({ hud, onReset }: CoordPanelProps) {
         <WinFeedback onReset={onReset} />
       ) : (
         <div className="flex flex-col gap-3">
-          <CornerProgress movedCount={hud.movedCount} />
           <LessonNote
-            ink="这叫重心坐标。每个点都能拆成三个角各占多少份。"
+            ink="这叫重心坐标。点离哪个角近，那个角占的份就多。"
             mute="电脑给三角上色、贴图，都先算这三个数。"
           />
           <HoldHint show={hud.holding} />

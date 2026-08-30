@@ -5,6 +5,7 @@ type OverlayInput = {
   a: Vec2;
   b: Vec2;
   c: Vec2;
+  sample: Vec2;
   ringFill: number;
   solved?: boolean;
   winBeat?: number;
@@ -37,6 +38,7 @@ function drawVertex(ctx: CanvasRenderingContext2D, point: Vec2, fill: string) {
 }
 
 const RING_R = 10;
+const SAMPLE_R = 6;
 const PALE = { r: 120, g: 170, b: 230 };
 const GREEN = { r: 26, g: 127, b: 75 };
 
@@ -55,6 +57,16 @@ function cssRgb(
   alpha: number,
 ) {
   return `rgb(${mix(from.r, to.r, t)} ${mix(from.g, to.g, t)} ${mix(from.b, to.b, t)} / ${alpha})`;
+}
+
+function drawSample(ctx: CanvasRenderingContext2D, point: Vec2) {
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, SAMPLE_R, 0, Math.PI * 2);
+  ctx.fillStyle = "#141414";
+  ctx.fill();
+  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = "#fff";
+  ctx.stroke();
 }
 
 function drawCentroid(
@@ -89,9 +101,10 @@ function drawCentroid(
 }
 
 export function drawOverlay(ctx: CanvasRenderingContext2D, input: OverlayInput) {
-  const { a, b, c } = input;
+  const { a, b, c, sample } = input;
   strokeTriangle(ctx, a, b, c);
   drawCentroid(ctx, a, b, c, input.ringFill, Boolean(input.solved), input.winBeat ?? 1);
+  if (!input.solved) drawSample(ctx, sample);
   drawVertex(ctx, a, VERTEX_HEX.a);
   drawVertex(ctx, b, VERTEX_HEX.b);
   drawVertex(ctx, c, VERTEX_HEX.c);

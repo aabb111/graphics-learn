@@ -6,6 +6,10 @@ function distance2(a: Vec2, b: Vec2) {
   return dx * dx + dy * dy;
 }
 
+export function hitPoint(point: Vec2, target: Vec2, radius: number) {
+  return Math.hypot(point.x - target.x, point.y - target.y) <= radius;
+}
+
 export function hitTarget(
   point: Vec2,
   vertices: { a: Vec2; b: Vec2; c: Vec2 },

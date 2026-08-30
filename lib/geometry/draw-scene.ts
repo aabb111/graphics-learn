@@ -17,7 +17,7 @@ export function sizeCanvas(canvas: HTMLCanvasElement) {
 export function drawScene(
   canvas: HTMLCanvasElement,
   fill: HTMLCanvasElement,
-  points: { a: Vec2; b: Vec2; c: Vec2 },
+  points: { a: Vec2; b: Vec2; c: Vec2; sample: Vec2 },
   ringFill = 0,
   solved = false,
   winBeat = 1,

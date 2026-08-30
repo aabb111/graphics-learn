@@ -16,7 +16,7 @@ export function TriangleStage({ studio, solved }: TriangleStageProps) {
     <div className="flex flex-1 flex-col">
       {solved ? null : (
         <p className="mb-3 text-[14px] leading-6 text-foreground break-keep">
-          把三个角都拖一下，再看中间三个数。
+          拖中间这个点。三个数会变。拖到正中，三个数一样。
         </p>
       )}
       <canvas
@@ -27,9 +27,9 @@ export function TriangleStage({ studio, solved }: TriangleStageProps) {
         onPointerCancel={onPointerCancel}
         className={cn(
           "h-[min(58vh,560px)] w-full touch-none bg-[#F4F4F2]",
-          "cursor-grab active:cursor-grabbing rounded-sm border border-border/80",
+          "rounded-sm border border-border/80",
         )}
-        aria-label="把三个角都拖一下，再看中间三个数"
+        aria-label="拖中间这个点。三个数会变。拖到正中，三个数一样。"
       />
     </div>
   );

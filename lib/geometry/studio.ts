@@ -4,18 +4,21 @@ import {
   barycentric,
   isInside,
   mixColor,
-  signedArea,
   toPx,
 } from "@/lib/geometry/barycentric";
 import { VERTEX_RGB } from "@/lib/geometry/colors";
 import { drawScene } from "@/lib/geometry/draw-scene";
-import { hitTarget, pointerToCss } from "@/lib/geometry/hit";
+import { hitPoint, pointerToCss } from "@/lib/geometry/hit";
 import { createHoldWatch, holdFill } from "@/lib/geometry/hold";
-import type { Barycentric, RGB, VertexId } from "@/lib/geometry/types";
-import { createVertexDrag } from "@/lib/geometry/vertex-drag";
+import {
+  clampToTriangle,
+  inTargetRing,
+  SAMPLE_HIT_R,
+  spawnSample,
+} from "@/lib/geometry/sample";
+import type { Barycentric, RGB } from "@/lib/geometry/types";
 import {
   centroidOf,
-  clampNorm,
   cloneWorld,
   DEFAULT_WORLD,
   type World,
@@ -30,7 +33,6 @@ export type StudioHud = {
   mix: RGB;
   solved: boolean;
   holding: boolean;
-  movedCount: number;
 };
 
 export type Studio = {
@@ -42,9 +44,9 @@ export type Studio = {
   reset: () => void;
 };
 
-const MIN_AREA = 0.045;
+const WIN_BEAT_MS = 220;
 
-function hudFrom(bc: Barycentric, world: World, movedCount = 0): StudioHud {
+function hudFrom(bc: Barycentric, world: World): StudioHud {
   return {
     alpha: bc.alpha,
     beta: bc.beta,
@@ -54,25 +56,27 @@ function hudFrom(bc: Barycentric, world: World, movedCount = 0): StudioHud {
     mix: mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c),
     solved: world.solved,
     holding: world.holding,
-    movedCount,
   };
 }
 
-function weightsAtCentroid(world: World, width: number, height: number) {
+function layout(world: World, width: number, height: number) {
   const a = toPx(world.a, width, height);
   const b = toPx(world.b, width, height);
   const c = toPx(world.c, width, height);
+  const sample = toPx(world.sample, width, height);
+  const centroid = toPx(centroidOf(world.a, world.b, world.c), width, height);
   return {
     a,
     b,
     c,
-    bc: barycentric(toPx(centroidOf(world.a, world.b, world.c), width, height), a, b, c),
+    sample,
+    centroid,
+    bc: barycentric(sample, a, b, c),
   };
 }
 
 export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   const world: World = cloneWorld();
-  const gesture = createVertexDrag();
   let fill: HTMLCanvasElement | null = null;
   let canvas: HTMLCanvasElement | null = null;
   let observer: ResizeObserver | null = null;
@@ -80,7 +84,6 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let grab = { x: 0, y: 0 };
   let winFrom = 0;
   const hold = createHoldWatch(() => sync());
-  const WIN_BEAT_MS = 220;
 
   function size() {
     if (!canvas) return null;
@@ -88,14 +91,18 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     return { width: rect.width, height: rect.height };
   }
 
+  function paintCursor(over: boolean) {
+    if (!canvas) return;
+    canvas.style.cursor = world.dragging ? "grabbing" : over ? "grab" : "default";
+  }
+
   function sync() {
     if (!canvas) return;
     const next = size();
     if (!next || next.width < 8 || next.height < 8) return;
     fill ??= document.createElement("canvas");
-    gesture.captureHome(world);
-    const { a, b, c, bc } = weightsAtCentroid(world, next.width, next.height);
-    const ready = gesture.canHold() && !bc.degenerate;
+    const { a, b, c, sample, centroid, bc } = layout(world, next.width, next.height);
+    const ready = inTargetRing(sample, centroid) && !world.dragging && !bc.degenerate;
     hold.evaluate(world, ready);
     if (world.solved && !winFrom) winFrom = performance.now();
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -105,8 +112,8 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
         : Math.min(1, (performance.now() - winFrom) / WIN_BEAT_MS)
       : 0;
     const ringFill = ready && !world.solved ? holdFill(world) : 0;
-    drawScene(canvas, fill, { a, b, c }, ringFill, world.solved, winBeat);
-    onHud(hudFrom(bc, world, gesture.movedCount()));
+    drawScene(canvas, fill, { a, b, c, sample }, ringFill, world.solved, winBeat);
+    onHud(hudFrom(bc, world));
     if ((world.holding || (world.solved && winBeat < 1)) && !raf) {
       raf = requestAnimationFrame(() => {
         raf = 0;
@@ -117,19 +124,14 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
 
   function place(event: PointerEvent<HTMLCanvasElement>) {
     const next = size();
-    if (!next) return null;
-    return { css: pointerToCss(event.nativeEvent, canvas!), next };
+    if (!next || !canvas) return null;
+    return { css: pointerToCss(event.nativeEvent, canvas), next };
   }
 
-  function moveVertex(id: VertexId, css: { x: number; y: number }, width: number, height: number) {
-    const norm = {
-      x: clampNorm((css.x - grab.x) / width),
-      y: clampNorm((css.y - grab.y) / height),
-    };
-    const draft = { ...world, [id]: norm };
-    if (Math.abs(signedArea(draft.a, draft.b, draft.c)) < MIN_AREA) return null;
-    world[id] = norm;
-    return { x: norm.x * width, y: norm.y * height };
+  function lift(id: number) {
+    if (canvas?.hasPointerCapture(id)) canvas.releasePointerCapture(id);
+    world.dragging = false;
+    sync();
   }
 
   return {
@@ -145,67 +147,63 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     onPointerDown(event) {
       const placed = place(event);
       if (!placed || !canvas) return;
-      const { a, b, c } = weightsAtCentroid(world, placed.next.width, placed.next.height);
-      const hit = hitTarget(placed.css, { a, b, c });
-      if (!hit) return;
-      const origin = hit === "a" ? a : hit === "b" ? b : c;
-      grab = { x: placed.css.x - origin.x, y: placed.css.y - origin.y };
-      gesture.down(event.nativeEvent.pointerId);
-      canvas.setPointerCapture(event.nativeEvent.pointerId);
-      world.drag = hit;
+      const { sample } = layout(world, placed.next.width, placed.next.height);
+      if (!hitPoint(placed.css, sample, SAMPLE_HIT_R)) {
+        paintCursor(false);
+        return;
+      }
+      grab = { x: placed.css.x - sample.x, y: placed.css.y - sample.y };
+      world.dragging = true;
+      paintCursor(true);
+      try {
+        canvas.setPointerCapture(event.nativeEvent.pointerId);
+      } catch {
+        /* already released */
+      }
       sync();
     },
     onPointerMove(event) {
       const placed = place(event);
-      if (!placed || !world.drag) return;
-      if (moveVertex(world.drag, placed.css, placed.next.width, placed.next.height)) {
-        gesture.mark(world.drag, world[world.drag], placed.next.width, placed.next.height);
+      if (!placed) return;
+      const { a, b, c, sample } = layout(world, placed.next.width, placed.next.height);
+      if (world.dragging) {
+        const next = clampToTriangle(
+          { x: placed.css.x - grab.x, y: placed.css.y - grab.y },
+          a,
+          b,
+          c,
+        );
+        world.sample = {
+          x: next.x / placed.next.width,
+          y: next.y / placed.next.height,
+        };
       }
+      paintCursor(world.dragging || hitPoint(placed.css, sample, SAMPLE_HIT_R));
       sync();
     },
     onPointerUp(event) {
-      const id = event.nativeEvent.pointerId;
-      if (canvas?.hasPointerCapture(id)) {
-        canvas.releasePointerCapture(id);
-      }
-      gesture.up(id);
-      world.drag = null;
-      sync();
+      lift(event.nativeEvent.pointerId);
     },
     onPointerCancel(event) {
-      const id = event.nativeEvent.pointerId;
-      if (canvas?.hasPointerCapture(id)) {
-        canvas.releasePointerCapture(id);
-      }
-      gesture.cancel(id);
-      world.drag = null;
-      sync();
+      lift(event.nativeEvent.pointerId);
     },
     reset() {
       const next = cloneWorld();
-      world.a = next.a;
-      world.b = next.b;
-      world.c = next.c;
-      world.drag = null;
+      world.sample = spawnSample(next.a, next.b, next.c);
+      world.dragging = false;
       world.holding = false;
       world.holdFrom = 0;
       world.solved = false;
       winFrom = 0;
-      gesture.reset();
       hold.stop();
       if (raf) cancelAnimationFrame(raf);
       raf = 0;
+      paintCursor(false);
       sync();
     },
   };
 }
 
-export const INITIAL_HUD = hudFrom(
-  barycentric(
-    toPx(centroidOf(DEFAULT_WORLD.a, DEFAULT_WORLD.b, DEFAULT_WORLD.c), 100, 100),
-    toPx(DEFAULT_WORLD.a, 100, 100),
-    toPx(DEFAULT_WORLD.b, 100, 100),
-    toPx(DEFAULT_WORLD.c, 100, 100),
-  ),
-  DEFAULT_WORLD,
-);
+const start = layout(DEFAULT_WORLD, 100, 100);
+
+export const INITIAL_HUD = hudFrom(start.bc, DEFAULT_WORLD);
