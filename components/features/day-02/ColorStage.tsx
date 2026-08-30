@@ -14,7 +14,7 @@ export function ColorStage({ studio }: ColorStageProps) {
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <p className="mb-3 text-[14px] leading-6 text-muted-foreground">
-        拖三个顶点上的颜色，让三角里的渐变对上右边的目标。
+        拖三个顶点上的颜色，顶点不要挪，绕着转色，让三角里的渐变对上右边的目标。
       </p>
       <div className="flex items-start gap-5 pt-6">
         <canvas
