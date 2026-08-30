@@ -5,6 +5,12 @@ export type Vec2 = {
 
 export type RGB = [number, number, number];
 
+export type VertexColors = {
+  a: RGB;
+  b: RGB;
+  c: RGB;
+};
+
 export type Barycentric = {
   alpha: number;
   beta: number;

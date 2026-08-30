@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 
 import { UpcomingDay } from "@/components/features/catalog/UpcomingDay";
 import { Day01Studio } from "@/components/features/day-01/Day01Studio";
+import { Day02Studio } from "@/components/features/day-02/Day02Studio";
 import { SiteFooter } from "@/components/features/site/SiteFooter";
 import { SiteHeader } from "@/components/features/site/SiteHeader";
 import { DAYS, getDay } from "@/lib/days/catalog";
@@ -36,6 +37,8 @@ export default async function DayPage({
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-5 py-6 md:px-8 md:py-8">
         {entry.day === 1 && entry.status === "playable" ? (
           <Day01Studio />
+        ) : entry.day === 2 && entry.status === "playable" ? (
+          <Day02Studio />
         ) : (
           <UpcomingDay entry={entry} />
         )}

@@ -10,7 +10,7 @@ type SiteHeaderProps = {
 };
 
 export function SiteHeader({ className }: SiteHeaderProps) {
-  const { isDay1, maxWidth } = useShellMax();
+  const { isDay1, isDay2, maxWidth } = useShellMax();
 
   return (
     <header className={cn("border-b border-border/80", className)}>
@@ -35,6 +35,15 @@ export function SiteHeader({ className }: SiteHeaderProps) {
             )}
           >
             第 1 关
+          </Link>
+          <Link
+            href="/days/2"
+            className={cn(
+              "transition-colors hover:text-foreground",
+              isDay2 ? "text-foreground" : "text-muted-foreground",
+            )}
+          >
+            第 2 关
           </Link>
         </nav>
       </div>

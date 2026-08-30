@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import type { DayEntry } from "@/lib/days/catalog";
-import { VERTEX_HEX } from "@/lib/geometry/colors";
 
 type DayCardProps = {
   entry: DayEntry;
@@ -17,9 +16,9 @@ export function DayCard({ entry }: DayCardProps) {
       <div className="mt-2 flex items-center justify-between gap-6">
         <div className="flex min-w-0 items-center gap-3">
           <span className="flex shrink-0 items-center gap-1" aria-hidden>
-            <span className="size-2 rounded-full" style={{ background: VERTEX_HEX.a }} />
-            <span className="size-2 rounded-full" style={{ background: VERTEX_HEX.b }} />
-            <span className="size-2 rounded-full" style={{ background: VERTEX_HEX.c }} />
+            <span className="size-2 rounded-full" style={{ background: entry.accents[0] }} />
+            <span className="size-2 rounded-full" style={{ background: entry.accents[1] }} />
+            <span className="size-2 rounded-full" style={{ background: entry.accents[2] }} />
           </span>
           <h2 className="text-[28px] font-normal tracking-tight">{entry.title}</h2>
         </div>

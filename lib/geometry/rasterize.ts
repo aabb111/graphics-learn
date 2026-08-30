@@ -1,6 +1,6 @@
 import { barycentric, isInside, mixColor } from "@/lib/geometry/barycentric";
 import { VERTEX_RGB } from "@/lib/geometry/colors";
-import type { Vec2 } from "@/lib/geometry/types";
+import type { Vec2, VertexColors } from "@/lib/geometry/types";
 
 export function rasterizeTriangle(
   ctx: CanvasRenderingContext2D,
@@ -9,6 +9,7 @@ export function rasterizeTriangle(
   a: Vec2,
   b: Vec2,
   c: Vec2,
+  colors: VertexColors = VERTEX_RGB,
 ) {
   const image = ctx.createImageData(width, height);
   const data = image.data;
@@ -22,12 +23,7 @@ export function rasterizeTriangle(
       const bc = barycentric({ x: x + 0.5, y: y + 0.5 }, a, b, c);
       if (!isInside(bc, 0.003)) continue;
 
-      const [red, green, blue] = mixColor(
-        bc,
-        VERTEX_RGB.a,
-        VERTEX_RGB.b,
-        VERTEX_RGB.c,
-      );
+      const [red, green, blue] = mixColor(bc, colors.a, colors.b, colors.c);
       const edge = Math.min(bc.alpha, bc.beta, bc.gamma);
       const coverage = Math.min(1, Math.max(0.4, edge / 0.01));
       const index = (y * width + x) * 4;
