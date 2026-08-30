@@ -10,14 +10,13 @@ import { VERTEX_RGB } from "@/lib/geometry/colors";
 import { drawScene } from "@/lib/geometry/draw-scene";
 import { hitPoint, pointerToCss } from "@/lib/geometry/hit";
 import { createHoldWatch, holdFill } from "@/lib/geometry/hold";
-import { createOffsetHandle, isOffsetPointer } from "@/lib/geometry/offset-handle";
 import {
   clampToTriangle,
   inTargetRing,
   SAMPLE_HIT_R,
   spawnSample,
 } from "@/lib/geometry/sample";
-import type { Barycentric, RGB } from "@/lib/geometry/types";
+import type { Barycentric, RGB, Vec2 } from "@/lib/geometry/types";
 import {
   centroidOf,
   cloneWorld,
@@ -46,6 +45,14 @@ export type Studio = {
 };
 
 const WIN_BEAT_MS = 220;
+
+function isRemote(type: string) {
+  return type === "touch" || type === "pen";
+}
+
+function blockNativeSelect(event: Event) {
+  event.preventDefault();
+}
 
 function hudFrom(bc: Barycentric, world: World): StudioHud {
   return {
@@ -83,9 +90,9 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let observer: ResizeObserver | null = null;
   let raf = 0;
   let grab = { x: 0, y: 0 };
+  let remote: Vec2 | null = null;
   let winFrom = 0;
   const hold = createHoldWatch(() => sync());
-  const offset = createOffsetHandle();
 
   function size() {
     if (!canvas) return null;
@@ -103,10 +110,6 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const next = size();
     if (!next || next.width < 8 || next.height < 8) return;
     fill ??= document.createElement("canvas");
-    const lifted = offset.place(next.width);
-    if (lifted) {
-      world.sample = { x: lifted.x / next.width, y: lifted.y / next.height };
-    }
     const { a, b, c, sample, centroid, bc } = layout(world, next.width, next.height);
     const ready = inTargetRing(sample, centroid) && !world.dragging && !bc.degenerate;
     hold.evaluate(world, ready);
@@ -120,18 +123,9 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const mix = mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c);
     const ringFill =
       ready && !world.solved ? (reduced ? 1 : holdFill(world)) : 0;
-    drawScene(
-      canvas,
-      fill,
-      { a, b, c, sample },
-      mix,
-      ringFill,
-      world.solved,
-      winBeat,
-      offset.stem(),
-    );
+    drawScene(canvas, fill, { a, b, c, sample }, mix, ringFill, world.solved, winBeat);
     onHud(hudFrom(bc, world));
-    if ((world.holding || (world.solved && winBeat < 1) || offset.pulsing()) && !raf) {
+    if ((world.holding || (world.solved && winBeat < 1)) && !raf) {
       raf = requestAnimationFrame(() => {
         raf = 0;
         sync();
@@ -145,10 +139,15 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     return { css: pointerToCss(event.nativeEvent, canvas), next };
   }
 
+  function putSample(point: Vec2, a: Vec2, b: Vec2, c: Vec2, width: number, height: number) {
+    const next = clampToTriangle(point, a, b, c);
+    world.sample = { x: next.x / width, y: next.y / height };
+  }
+
   function lift(id: number) {
     if (canvas?.hasPointerCapture(id)) canvas.releasePointerCapture(id);
-    if (offset.active()) offset.end();
     world.dragging = false;
+    remote = null;
     sync();
   }
 
@@ -156,8 +155,16 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     bindCanvas(node) {
       observer?.disconnect();
       observer = null;
+      if (canvas) {
+        canvas.removeEventListener("selectstart", blockNativeSelect);
+        canvas.removeEventListener("contextmenu", blockNativeSelect);
+        canvas.removeEventListener("touchstart", blockNativeSelect);
+      }
       canvas = node;
       if (!node) return;
+      node.addEventListener("selectstart", blockNativeSelect);
+      node.addEventListener("contextmenu", blockNativeSelect);
+      node.addEventListener("touchstart", blockNativeSelect, { passive: false });
       observer = new ResizeObserver(() => sync());
       observer.observe(node);
       sync();
@@ -166,13 +173,13 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       const placed = place(event);
       if (!placed || !canvas) return;
       const { sample } = layout(world, placed.next.width, placed.next.height);
-      if (!hitPoint(placed.css, sample, SAMPLE_HIT_R)) {
-        paintCursor(false);
-        return;
-      }
-      if (isOffsetPointer(event.nativeEvent.pointerType)) {
-        offset.begin(sample, placed.css);
+      if (isRemote(event.nativeEvent.pointerType)) {
+        remote = { ...placed.css };
       } else {
+        if (!hitPoint(placed.css, sample, SAMPLE_HIT_R)) {
+          paintCursor(false);
+          return;
+        }
         grab = { x: placed.css.x - sample.x, y: placed.css.y - sample.y };
       }
       world.dragging = true;
@@ -188,19 +195,28 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       const placed = place(event);
       if (!placed) return;
       const { a, b, c, sample } = layout(world, placed.next.width, placed.next.height);
-      if (world.dragging && offset.active()) {
-        offset.move(placed.css);
+      if (world.dragging && remote) {
+        putSample(
+          {
+            x: sample.x + placed.css.x - remote.x,
+            y: sample.y + placed.css.y - remote.y,
+          },
+          a,
+          b,
+          c,
+          placed.next.width,
+          placed.next.height,
+        );
+        remote = { ...placed.css };
       } else if (world.dragging) {
-        const next = clampToTriangle(
+        putSample(
           { x: placed.css.x - grab.x, y: placed.css.y - grab.y },
           a,
           b,
           c,
+          placed.next.width,
+          placed.next.height,
         );
-        world.sample = {
-          x: next.x / placed.next.width,
-          y: next.y / placed.next.height,
-        };
       }
       paintCursor(world.dragging || hitPoint(placed.css, sample, SAMPLE_HIT_R));
       sync();
@@ -214,8 +230,8 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     reset() {
       const next = cloneWorld();
       world.sample = spawnSample(next.a, next.b, next.c);
-      offset.reset();
       world.dragging = false;
+      remote = null;
       world.holding = false;
       world.holdFrom = 0;
       world.solved = false;

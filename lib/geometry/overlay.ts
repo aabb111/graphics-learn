@@ -1,4 +1,4 @@
-import { VERTEX_HEX, rgbToCss } from "@/lib/geometry/colors";
+import { VERTEX_HEX } from "@/lib/geometry/colors";
 import { SAMPLE_R, TARGET_RING_R } from "@/lib/geometry/sample";
 import type { RGB, Vec2 } from "@/lib/geometry/types";
 
@@ -11,7 +11,6 @@ type OverlayInput = {
   ringFill: number;
   solved?: boolean;
   winBeat?: number;
-  stem?: { contact: Vec2; opacity: number } | null;
 };
 
 const VERTEX_R = 3;
@@ -58,28 +57,17 @@ function cssRgb(
   return `rgb(${mix(from.r, to.r, t)} ${mix(from.g, to.g, t)} ${mix(from.b, to.b, t)} / ${alpha})`;
 }
 
-function drawStem(
-  ctx: CanvasRenderingContext2D,
-  contact: Vec2,
-  sample: Vec2,
-  opacity: number,
-) {
-  if (opacity <= 0) return;
-  ctx.beginPath();
-  ctx.moveTo(contact.x, contact.y);
-  ctx.lineTo(sample.x, sample.y);
-  ctx.strokeStyle = `rgb(20 20 20 / ${0.22 * opacity})`;
-  ctx.lineWidth = 1;
-  ctx.stroke();
-}
-
 function drawSample(ctx: CanvasRenderingContext2D, point: Vec2, fill: RGB) {
+  const r = Math.round(fill[0]);
+  const g = Math.round(fill[1]);
+  const b = Math.round(fill[2]);
   ctx.beginPath();
   ctx.arc(point.x, point.y, SAMPLE_R, 0, Math.PI * 2);
-  ctx.fillStyle = rgbToCss(fill);
+  ctx.closePath();
+  ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
   ctx.fill();
   ctx.lineWidth = 2;
-  ctx.strokeStyle = "#fff";
+  ctx.strokeStyle = "#ffffff";
   ctx.stroke();
 }
 
@@ -118,9 +106,6 @@ export function drawOverlay(ctx: CanvasRenderingContext2D, input: OverlayInput) 
   const { a, b, c, sample, mix: sampleMix } = input;
   strokeTriangle(ctx, a, b, c);
   drawCentroid(ctx, a, b, c, input.ringFill, Boolean(input.solved), input.winBeat ?? 1);
-  if (!input.solved && input.stem) {
-    drawStem(ctx, input.stem.contact, sample, input.stem.opacity);
-  }
   if (!input.solved) drawSample(ctx, sample, sampleMix);
   drawVertex(ctx, a, VERTEX_HEX.a);
   drawVertex(ctx, b, VERTEX_HEX.b);

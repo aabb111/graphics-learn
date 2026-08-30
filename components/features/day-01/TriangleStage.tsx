@@ -1,5 +1,7 @@
 "use client";
 
+import type { PointerEvent, SyntheticEvent } from "react";
+
 import { cn } from "@/lib/utils";
 import type { Studio } from "@/lib/geometry/studio";
 
@@ -8,9 +10,18 @@ type TriangleStageProps = {
   solved: boolean;
 };
 
+function blockSelect(event: SyntheticEvent) {
+  event.preventDefault();
+}
+
 export function TriangleStage({ studio, solved }: TriangleStageProps) {
   const { bindCanvas, onPointerDown, onPointerMove, onPointerUp, onPointerCancel } =
     studio;
+
+  function down(event: PointerEvent<HTMLCanvasElement>) {
+    event.preventDefault();
+    onPointerDown(event);
+  }
 
   return (
     <div className="flex flex-1 flex-col">
@@ -19,18 +30,32 @@ export function TriangleStage({ studio, solved }: TriangleStageProps) {
           拖中间这个点。三个数会变。拖到正中，三个数一样。
         </p>
       )}
-      <canvas
-        ref={bindCanvas}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerCancel}
-        className={cn(
-          "h-[min(58vh,560px)] w-full touch-none bg-[#F4F4F2]",
-          "rounded-sm border border-border/80",
-        )}
-        aria-label="拖中间这个点。三个数会变。拖到正中，三个数一样。"
-      />
+      <div
+        className="day1-play"
+        onContextMenu={blockSelect}
+        onDragStart={blockSelect}
+        onCopy={blockSelect}
+        onCut={blockSelect}
+      >
+        <canvas
+          ref={bindCanvas}
+          draggable={false}
+          onPointerDown={down}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+          onContextMenu={blockSelect}
+          onDragStart={blockSelect}
+          onCopy={blockSelect}
+          onCut={blockSelect}
+          onSelect={blockSelect}
+          className={cn(
+            "h-[min(58vh,560px)] w-full touch-none select-none bg-[#F4F4F2]",
+            "rounded-sm border border-border/80",
+          )}
+          aria-label="拖中间这个点。三个数会变。拖到正中，三个数一样。"
+        />
+      </div>
     </div>
   );
 }
