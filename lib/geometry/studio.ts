@@ -173,13 +173,13 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       const placed = place(event);
       if (!placed || !canvas) return;
       const { sample } = layout(world, placed.next.width, placed.next.height);
+      if (!hitPoint(placed.css, sample, SAMPLE_HIT_R)) {
+        paintCursor(false);
+        return;
+      }
       if (isRemote(event.nativeEvent.pointerType)) {
         remote = { ...placed.css };
       } else {
-        if (!hitPoint(placed.css, sample, SAMPLE_HIT_R)) {
-          paintCursor(false);
-          return;
-        }
         grab = { x: placed.css.x - sample.x, y: placed.css.y - sample.y };
       }
       world.dragging = true;
