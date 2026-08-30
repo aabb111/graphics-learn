@@ -6,17 +6,25 @@ const LIFT_MS = 120;
 const STEM_MS = 80;
 const EDGE = SAMPLE_R + 2;
 
-export function offsetFromContact(contact: Vec2, width: number): Vec2 {
-  const up = { x: contact.x, y: contact.y - TOUCH_LIFT };
-  if (up.y >= EDGE) return up;
-  const rightRoom = width - contact.x;
-  if (rightRoom > contact.x) {
-    return { x: contact.x + TOUCH_LIFT, y: contact.y };
-  }
-  return { x: contact.x - TOUCH_LIFT, y: contact.y };
+export type OffsetSide = "up" | "left" | "right";
+
+export function offsetSide(contact: Vec2, width: number): OffsetSide {
+  if (contact.y - TOUCH_LIFT >= EDGE) return "up";
+  return width - contact.x > contact.x ? "right" : "left";
 }
 
-type Phase = "idle" | "in" | "drag" | "out";
+export function offsetVector(side: OffsetSide): Vec2 {
+  if (side === "up") return { x: 0, y: -TOUCH_LIFT };
+  if (side === "right") return { x: TOUCH_LIFT, y: 0 };
+  return { x: -TOUCH_LIFT, y: 0 };
+}
+
+export function offsetFromContact(contact: Vec2, width: number): Vec2 {
+  const off = offsetVector(offsetSide(contact, width));
+  return { x: contact.x + off.x, y: contact.y + off.y };
+}
+
+type Phase = "idle" | "drag" | "out";
 
 function easeOut(t: number) {
   return 1 - (1 - t) * (1 - t);
@@ -27,6 +35,10 @@ function lerp(from: Vec2, to: Vec2, t: number): Vec2 {
     x: from.x + (to.x - from.x) * t,
     y: from.y + (to.y - from.y) * t,
   };
+}
+
+function add(point: Vec2, off: Vec2): Vec2 {
+  return { x: point.x + off.x, y: point.y + off.y };
 }
 
 function reducedMotion() {
@@ -40,62 +52,96 @@ export function isOffsetPointer(type: string) {
 export function createOffsetHandle() {
   let phase: Phase = "idle";
   let contact: Vec2 | null = null;
-  let liftFrom: Vec2 | null = null;
+  let fromOff: Vec2 = { x: 0, y: 0 };
+  let toOff: Vec2 = { x: 0, y: 0 };
+  let side: OffsetSide | null = null;
   let frozen: Vec2 | null = null;
-  let from = 0;
+  let tweenFrom = 0;
+  let tweening = false;
+  let width = 0;
 
-  let canvas = { width: 0, height: 0 };
+  function currentOff() {
+    if (!tweening) return toOff;
+    const t = easeOut(Math.min(1, (performance.now() - tweenFrom) / LIFT_MS));
+    if (t >= 1) {
+      tweening = false;
+      return toOff;
+    }
+    return lerp(fromOff, toOff, t);
+  }
 
-  function dest() {
-    if (!contact) return null;
-    return offsetFromContact(contact, canvas.width);
+  function startTween(next: Vec2) {
+    if (reducedMotion()) {
+      fromOff = next;
+      toOff = next;
+      tweening = false;
+      return;
+    }
+    fromOff = currentOff();
+    toOff = next;
+    tweenFrom = performance.now();
+    tweening = true;
   }
 
   return {
     reset() {
       phase = "idle";
       contact = null;
-      liftFrom = null;
+      side = null;
       frozen = null;
+      tweening = false;
     },
     active() {
       return phase !== "idle";
     },
     pulsing() {
-      if (phase === "in") return performance.now() - from < LIFT_MS;
-      if (phase === "out") return performance.now() - from < STEM_MS;
+      if (tweening) return true;
+      if (phase === "out") return performance.now() - tweenFrom < STEM_MS;
       return false;
     },
     begin(sample: Vec2, point: Vec2) {
       contact = { ...point };
-      liftFrom = { ...sample };
+      fromOff = { x: sample.x - point.x, y: sample.y - point.y };
+      toOff = fromOff;
+      side = null;
       frozen = null;
-      from = performance.now();
-      phase = reducedMotion() ? "drag" : "in";
+      tweenFrom = performance.now();
+      tweening = !reducedMotion();
+      phase = "drag";
     },
     move(point: Vec2) {
-      if (phase !== "in" && phase !== "drag") return;
+      if (phase !== "drag") return;
       contact = { ...point };
     },
     end() {
       if (phase === "idle") return;
-      from = performance.now();
+      if (contact) frozen = add(contact, currentOff());
+      tweenFrom = performance.now();
+      tweening = false;
       phase = reducedMotion() ? "idle" : "out";
       if (phase === "idle") contact = null;
     },
-    place(width: number, height: number): Vec2 | null {
-      canvas = { width, height };
-      if (phase === "idle") return null;
+    place(nextWidth: number) {
+      width = nextWidth;
+      if (phase === "idle" || !contact) return null;
       if (phase === "out") return frozen;
-      const to = dest();
-      if (!to || !liftFrom) return frozen;
-      if (phase === "drag") {
-        frozen = to;
-        return to;
+      const nextSide = offsetSide(contact, width);
+      const dest = offsetVector(nextSide);
+      if (side === null) {
+        side = nextSide;
+        toOff = dest;
+        if (reducedMotion()) {
+          fromOff = dest;
+          tweening = false;
+        } else {
+          tweenFrom = performance.now();
+          tweening = true;
+        }
+      } else if (nextSide !== side) {
+        side = nextSide;
+        startTween(dest);
       }
-      const t = easeOut(Math.min(1, (performance.now() - from) / LIFT_MS));
-      if (t >= 1) phase = "drag";
-      frozen = lerp(liftFrom, to, t);
+      frozen = add(contact, currentOff());
       return frozen;
     },
     stem() {
@@ -106,7 +152,7 @@ export function createOffsetHandle() {
           contact = null;
           return null;
         }
-        const opacity = Math.max(0, 1 - (performance.now() - from) / STEM_MS);
+        const opacity = Math.max(0, 1 - (performance.now() - tweenFrom) / STEM_MS);
         if (opacity <= 0) {
           phase = "idle";
           contact = null;
