@@ -1,4 +1,5 @@
-import { ChallengeCard } from "@/components/features/day-01/ChallengeCard";
+import { LessonNote } from "@/components/features/lesson/LessonNote";
+import { HoldHint } from "@/components/features/motion/HoldHint";
 import { WeightBars } from "@/components/features/day-01/WeightBars";
 import { WinFeedback } from "@/components/features/day-01/WinFeedback";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,11 @@ export function CoordPanel({ hud, onReset }: CoordPanelProps) {
         <WinFeedback onReset={onReset} />
       ) : (
         <div className="flex flex-col gap-3">
-          <ChallengeCard hud={hud} />
+          <LessonNote
+            ink="这叫重心坐标。每个点都能拆成三个角各占多少份。"
+            mute="电脑给三角上色、贴图，都先算这三个数。"
+          />
+          <HoldHint show={hud.holding} />
           <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>
             重置三角形
           </Button>

@@ -74,7 +74,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let observer: ResizeObserver | null = null;
   let raf = 0;
   let grab = { x: 0, y: 0 };
-  let press = { x: 0, y: 0 };
+  let pressVertex = { x: 0, y: 0 };
   const hold = createHoldWatch(() => sync());
 
   function size() {
@@ -121,7 +121,9 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const draft = { ...world, [id]: norm };
     if (Math.abs(signedArea(draft.a, draft.b, draft.c)) < MIN_AREA) return;
     world[id] = norm;
-    if (draggedPast(press, css)) world.armed = true;
+    if (draggedPast(pressVertex, { x: norm.x * width, y: norm.y * height })) {
+      world.armed = true;
+    }
   }
 
   return {
@@ -142,7 +144,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       if (!hit) return;
       const origin = hit === "a" ? a : hit === "b" ? b : c;
       grab = { x: placed.css.x - origin.x, y: placed.css.y - origin.y };
-      press = { x: placed.css.x, y: placed.css.y };
+      pressVertex = { x: origin.x, y: origin.y };
       canvas.setPointerCapture(event.nativeEvent.pointerId);
       world.drag = hit;
       sync();

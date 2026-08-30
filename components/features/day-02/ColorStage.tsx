@@ -32,7 +32,7 @@ export function ColorStage({ studio, solved }: ColorStageProps) {
           )}
           aria-label="按住左边一个角转一转，让三个角跟右边一样"
         />
-        <div className="flex w-full flex-col gap-2">
+        <div className="mx-auto flex w-[40%] flex-col gap-2">
           <p className="text-[11px] tracking-[0.16em] text-muted-foreground">
             目标
           </p>

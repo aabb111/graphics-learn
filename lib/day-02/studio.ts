@@ -30,7 +30,7 @@ export type ColorStudio = {
   reset: () => void;
 };
 
-const HIT_R = 28;
+const HIT_R = 36;
 
 type RingState = {
   vertex: VertexId;
@@ -82,9 +82,9 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
 
   function pulsing() {
     if (world.holding) return true;
+    if (world.drag && ring) return true;
     if (!ring) return false;
-    const elapsed = performance.now() - ring.from;
-    return ring.phase === "in" ? elapsed < 120 : elapsed < 80;
+    return ring.phase === "out" && performance.now() - ring.from < 80;
   }
 
   function sync() {

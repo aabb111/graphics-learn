@@ -61,6 +61,7 @@ export function drawHueRing(ctx: CanvasRenderingContext2D, look: HueRingLook) {
   ctx.lineTo(Math.cos(rad) * (RING_R - 6), Math.sin(rad) * (RING_R - 6));
   ctx.strokeStyle = "#141414";
   ctx.lineWidth = 2;
+  ctx.lineCap = "butt";
   ctx.stroke();
   ctx.restore();
 }
