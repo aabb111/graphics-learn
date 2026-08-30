@@ -16,7 +16,7 @@ export function ColorStage({ studio, solved }: ColorStageProps) {
     <div className="flex min-w-0 flex-1 flex-col">
       {solved ? null : (
         <p className="mb-3 text-[14px] leading-6 text-foreground">
-          按住左边一个角转一转，让三个角跟右边一样。
+          按住上面一个角转一转，让三个角跟下面一样。
         </p>
       )}
       <div className="flex flex-col gap-6">
@@ -30,7 +30,7 @@ export function ColorStage({ studio, solved }: ColorStageProps) {
             "aspect-[4/3] w-full touch-none bg-[#F4F4F2]",
             "cursor-grab active:cursor-grabbing rounded-sm border border-border/80",
           )}
-          aria-label="按住左边一个角转一转，让三个角跟右边一样"
+          aria-label="按住上面一个角转一转，让三个角跟下面一样"
         />
         <div className="mx-auto flex w-[40%] flex-col gap-2">
           <p className="text-[11px] tracking-[0.16em] text-muted-foreground">

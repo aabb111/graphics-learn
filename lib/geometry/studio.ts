@@ -30,6 +30,7 @@ export type StudioHud = {
   mix: RGB;
   solved: boolean;
   holding: boolean;
+  movedCount: number;
 };
 
 export type Studio = {
@@ -43,7 +44,7 @@ export type Studio = {
 
 const MIN_AREA = 0.045;
 
-function hudFrom(bc: Barycentric, world: World): StudioHud {
+function hudFrom(bc: Barycentric, world: World, movedCount = 0): StudioHud {
   return {
     alpha: bc.alpha,
     beta: bc.beta,
@@ -53,6 +54,7 @@ function hudFrom(bc: Barycentric, world: World): StudioHud {
     mix: mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c),
     solved: world.solved,
     holding: world.holding,
+    movedCount,
   };
 }
 
@@ -104,7 +106,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       : 0;
     const ringFill = ready && !world.solved ? holdFill(world) : 0;
     drawScene(canvas, fill, { a, b, c }, ringFill, world.solved, winBeat);
-    onHud(hudFrom(bc, world));
+    onHud(hudFrom(bc, world, gesture.movedCount()));
     if ((world.holding || (world.solved && winBeat < 1)) && !raf) {
       raf = requestAnimationFrame(() => {
         raf = 0;

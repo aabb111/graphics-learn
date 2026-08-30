@@ -1,9 +1,10 @@
 import { hslToRgb, rgbToCss } from "@/lib/day-02/hue";
 import { drawHueRing, type HueRingLook } from "@/lib/day-02/hue-ring";
+import { CHIP_R, playToPx } from "@/lib/day-02/play-space";
 import { TARGET_HUES, TRIANGLE, type Hues } from "@/lib/day-02/world";
+import { toPx } from "@/lib/geometry/barycentric";
 import { sizeCanvas } from "@/lib/geometry/draw-scene";
 import { rasterizeTriangle } from "@/lib/geometry/rasterize";
-import { toPx } from "@/lib/geometry/barycentric";
 
 function huesToColors(hues: Hues) {
   return {
@@ -29,7 +30,20 @@ function strokeTriangle(
   ctx.stroke();
 }
 
-const PLAY_KNOB_R = 11;
+function locateVertex(
+  map: (point: { x: number; y: number }, width: number, height: number) => {
+    x: number;
+    y: number;
+  },
+  width: number,
+  height: number,
+) {
+  return {
+    a: map(TRIANGLE.a, width, height),
+    b: map(TRIANGLE.b, width, height),
+    c: map(TRIANGLE.c, width, height),
+  };
+}
 
 function drawKnob(
   ctx: CanvasRenderingContext2D,
@@ -57,6 +71,7 @@ function paintFill(
   canvas: HTMLCanvasElement,
   fill: HTMLCanvasElement,
   hues: Hues,
+  map: typeof playToPx,
 ) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const fillW = Math.max(1, Math.round(cssW));
@@ -68,9 +83,7 @@ function paintFill(
   const fillCtx = fill.getContext("2d");
   const ctx = canvas.getContext("2d");
   if (!fillCtx || !ctx || cssW < 8 || cssH < 8) return null;
-  const a = toPx(TRIANGLE.a, cssW, cssH);
-  const b = toPx(TRIANGLE.b, cssW, cssH);
-  const c = toPx(TRIANGLE.c, cssW, cssH);
+  const { a, b, c } = locateVertex(map, cssW, cssH);
   fillCtx.clearRect(0, 0, fillW, fillH);
   rasterizeTriangle(fillCtx, fillW, fillH, a, b, c, huesToColors(hues));
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -86,18 +99,18 @@ export function drawPlay(
   hues: Hues,
   ring: HueRingLook | null,
 ) {
-  const painted = paintFill(canvas, fill, hues);
+  const painted = paintFill(canvas, fill, hues, playToPx);
   if (!painted) return;
   const { ctx, a, b, c } = painted;
   const colors = huesToColors(hues);
   if (ring) drawHueRing(ctx, ring);
-  drawKnob(ctx, a, rgbToCss(colors.a), PLAY_KNOB_R, "A");
-  drawKnob(ctx, b, rgbToCss(colors.b), PLAY_KNOB_R, "B");
-  drawKnob(ctx, c, rgbToCss(colors.c), PLAY_KNOB_R, "C");
+  drawKnob(ctx, a, rgbToCss(colors.a), CHIP_R, "A");
+  drawKnob(ctx, b, rgbToCss(colors.b), CHIP_R, "B");
+  drawKnob(ctx, c, rgbToCss(colors.c), CHIP_R, "C");
 }
 
 export function drawTarget(canvas: HTMLCanvasElement, fill: HTMLCanvasElement) {
-  const painted = paintFill(canvas, fill, TARGET_HUES);
+  const painted = paintFill(canvas, fill, TARGET_HUES, toPx);
   if (!painted) return;
   const { ctx, a, b, c } = painted;
   const colors = huesToColors(TARGET_HUES);

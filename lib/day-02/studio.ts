@@ -1,6 +1,6 @@
 import type { PointerEvent } from "react";
 
-import { drawPlay, drawTarget, huesToColors } from "@/lib/day-02/draw";
+import { drawPlay, drawTarget } from "@/lib/day-02/draw";
 import {
   prefersReducedMotion,
   ringEnter,
@@ -9,8 +9,8 @@ import {
 } from "@/lib/day-02/hue-ring";
 import { pointerHue } from "@/lib/day-02/hue";
 import { matchScore } from "@/lib/day-02/match";
-import { cloneWorld, TARGET_HUES, TRIANGLE } from "@/lib/day-02/world";
-import { toPx } from "@/lib/geometry/barycentric";
+import { hitPlayVertex, playToPx } from "@/lib/day-02/play-space";
+import { cloneWorld, START_HUES, TARGET_HUES, TRIANGLE } from "@/lib/day-02/world";
 import { createHoldWatch } from "@/lib/geometry/hold";
 import { pointerToCss } from "@/lib/geometry/hit";
 import type { VertexId } from "@/lib/geometry/types";
@@ -30,24 +30,15 @@ export type ColorStudio = {
   reset: () => void;
 };
 
-const HIT_R = 36;
-
 type RingState = {
   vertex: VertexId;
   phase: "in" | "out";
   from: number;
 };
 
-function hitVertex(
-  point: { x: number; y: number },
-  width: number,
-  height: number,
-): VertexId | null {
-  for (const id of ["a", "b", "c"] as VertexId[]) {
-    const vertex = toPx(TRIANGLE[id], width, height);
-    if (Math.hypot(point.x - vertex.x, point.y - vertex.y) <= HIT_R) return id;
-  }
-  return null;
+function playBox(node: HTMLCanvasElement) {
+  const rect = node.getBoundingClientRect();
+  return { width: rect.width, height: rect.height };
 }
 
 export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
@@ -64,8 +55,8 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
 
   function ringLook(): HueRingLook | null {
     if (!ring || !play) return null;
-    const rect = play.getBoundingClientRect();
-    const origin = toPx(TRIANGLE[ring.vertex], rect.width, rect.height);
+    const box = playBox(play);
+    const origin = playToPx(TRIANGLE[ring.vertex], box.width, box.height);
     const hue = world.hues[ring.vertex];
     const elapsed = performance.now() - ring.from;
     const reduced = prefersReducedMotion();
@@ -88,7 +79,7 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
   }
 
   function sync() {
-    const score = matchScore(huesToColors(world.hues), huesToColors(TARGET_HUES));
+    const score = matchScore(world.hues, TARGET_HUES);
     hold.evaluate(world, !world.drag && score.matched);
     playFill ??= document.createElement("canvas");
     targetFill ??= document.createElement("canvas");
@@ -134,9 +125,9 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
     },
     onPointerDown(event) {
       if (!play) return;
-      const rect = play.getBoundingClientRect();
+      const box = playBox(play);
       const css = pointerToCss(event.nativeEvent, play);
-      const hit = hitVertex(css, rect.width, rect.height);
+      const hit = hitPlayVertex(css, box.width, box.height);
       if (!hit) return;
       try {
         play.setPointerCapture(event.nativeEvent.pointerId);
@@ -145,16 +136,16 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
       }
       world.drag = hit;
       ring = { vertex: hit, phase: "in", from: performance.now() };
-      const hue = pointerHue(toPx(TRIANGLE[hit], rect.width, rect.height), css);
+      const hue = pointerHue(playToPx(TRIANGLE[hit], box.width, box.height), css);
       if (hue !== null) world.hues[hit] = hue;
       sync();
     },
     onPointerMove(event) {
       if (!play || !world.drag) return;
-      const rect = play.getBoundingClientRect();
+      const box = playBox(play);
       const css = pointerToCss(event.nativeEvent, play);
       const hue = pointerHue(
-        toPx(TRIANGLE[world.drag], rect.width, rect.height),
+        playToPx(TRIANGLE[world.drag], box.width, box.height),
         css,
       );
       if (hue !== null) world.hues[world.drag] = hue;
@@ -189,7 +180,7 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
 }
 
 export const INITIAL_COLOR_HUD: ColorHud = {
-  closeness: 0,
+  closeness: matchScore(START_HUES, TARGET_HUES).closeness,
   holding: false,
   solved: false,
 };

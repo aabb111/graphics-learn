@@ -49,5 +49,8 @@ export function createVertexDrag() {
     canHold() {
       return moved.a && moved.b && moved.c && pointerId === null;
     },
+    movedCount() {
+      return Number(moved.a) + Number(moved.b) + Number(moved.c);
+    },
   };
 }
