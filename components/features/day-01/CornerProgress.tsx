@@ -5,7 +5,8 @@ type CornerProgressProps = {
 };
 
 function remainingCopy(movedCount: number) {
-  if (movedCount === 1 || movedCount === 2) return "还差一个角";
+  if (movedCount === 1) return "还差两个角";
+  if (movedCount === 2) return "还差一个角";
   return null;
 }
 
