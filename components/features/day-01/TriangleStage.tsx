@@ -9,7 +9,8 @@ type TriangleStageProps = {
 };
 
 export function TriangleStage({ studio, solved }: TriangleStageProps) {
-  const { bindCanvas, onPointerDown, onPointerMove, onPointerUp } = studio;
+  const { bindCanvas, onPointerDown, onPointerMove, onPointerUp, onPointerCancel } =
+    studio;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -23,7 +24,7 @@ export function TriangleStage({ studio, solved }: TriangleStageProps) {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onPointerCancel={onPointerCancel}
         className={cn(
           "h-[min(58vh,560px)] w-full touch-none bg-[#F4F4F2]",
           "cursor-grab active:cursor-grabbing rounded-sm border border-border/80",

@@ -7,17 +7,3 @@ export function draggedPast(
 ) {
   return Math.hypot(point.x - origin.x, point.y - origin.y) >= minPx;
 }
-
-export function holdReady(input: {
-  armed: boolean;
-  released: boolean;
-  dragging: boolean;
-  degenerate: boolean;
-}) {
-  return (
-    input.armed &&
-    input.released &&
-    !input.dragging &&
-    !input.degenerate
-  );
-}

@@ -9,10 +9,10 @@ import {
 } from "@/lib/geometry/barycentric";
 import { VERTEX_RGB } from "@/lib/geometry/colors";
 import { drawScene } from "@/lib/geometry/draw-scene";
-import { draggedPast, holdReady } from "@/lib/geometry/drag-arm";
 import { hitTarget, pointerToCss } from "@/lib/geometry/hit";
 import { createHoldWatch, holdFill } from "@/lib/geometry/hold";
 import type { Barycentric, RGB, VertexId } from "@/lib/geometry/types";
+import { createVertexDrag } from "@/lib/geometry/vertex-drag";
 import {
   centroidOf,
   clampNorm,
@@ -37,6 +37,7 @@ export type Studio = {
   onPointerDown: (event: PointerEvent<HTMLCanvasElement>) => void;
   onPointerMove: (event: PointerEvent<HTMLCanvasElement>) => void;
   onPointerUp: (event: PointerEvent<HTMLCanvasElement>) => void;
+  onPointerCancel: (event: PointerEvent<HTMLCanvasElement>) => void;
   reset: () => void;
 };
 
@@ -69,13 +70,12 @@ function weightsAtCentroid(world: World, width: number, height: number) {
 
 export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   const world: World = cloneWorld();
+  const gesture = createVertexDrag();
   let fill: HTMLCanvasElement | null = null;
   let canvas: HTMLCanvasElement | null = null;
   let observer: ResizeObserver | null = null;
   let raf = 0;
   let grab = { x: 0, y: 0 };
-  let pressVertex = { x: 0, y: 0 };
-  let released = false;
   const hold = createHoldWatch(() => sync());
 
   function size() {
@@ -90,12 +90,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     if (!next || next.width < 8 || next.height < 8) return;
     fill ??= document.createElement("canvas");
     const { a, b, c, bc } = weightsAtCentroid(world, next.width, next.height);
-    const ready = holdReady({
-      armed: world.armed,
-      released,
-      dragging: Boolean(world.drag),
-      degenerate: bc.degenerate,
-    });
+    const ready = gesture.canHold() && !bc.degenerate;
     hold.evaluate(world, ready);
     drawScene(canvas, fill, { a, b, c }, ready || world.solved ? holdFill(world) : 0);
     onHud(hudFrom(bc, world));
@@ -119,11 +114,9 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       y: clampNorm((css.y - grab.y) / height),
     };
     const draft = { ...world, [id]: norm };
-    if (Math.abs(signedArea(draft.a, draft.b, draft.c)) < MIN_AREA) return;
+    if (Math.abs(signedArea(draft.a, draft.b, draft.c)) < MIN_AREA) return null;
     world[id] = norm;
-    if (draggedPast(pressVertex, { x: norm.x * width, y: norm.y * height })) {
-      world.armed = true;
-    }
+    return { x: norm.x * width, y: norm.y * height };
   }
 
   return {
@@ -144,7 +137,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       if (!hit) return;
       const origin = hit === "a" ? a : hit === "b" ? b : c;
       grab = { x: placed.css.x - origin.x, y: placed.css.y - origin.y };
-      pressVertex = { x: origin.x, y: origin.y };
+      gesture.down(event.nativeEvent.pointerId, origin);
       canvas.setPointerCapture(event.nativeEvent.pointerId);
       world.drag = hit;
       sync();
@@ -152,14 +145,25 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     onPointerMove(event) {
       const placed = place(event);
       if (!placed || !world.drag) return;
-      moveVertex(world.drag, placed.css, placed.next.width, placed.next.height);
+      const next = moveVertex(world.drag, placed.css, placed.next.width, placed.next.height);
+      if (next) gesture.move(event.nativeEvent.pointerId, next);
       sync();
     },
     onPointerUp(event) {
-      if (canvas?.hasPointerCapture(event.nativeEvent.pointerId)) {
-        canvas.releasePointerCapture(event.nativeEvent.pointerId);
+      const id = event.nativeEvent.pointerId;
+      if (canvas?.hasPointerCapture(id)) {
+        canvas.releasePointerCapture(id);
       }
-      if (world.armed) released = true;
+      gesture.up(id);
+      world.drag = null;
+      sync();
+    },
+    onPointerCancel(event) {
+      const id = event.nativeEvent.pointerId;
+      if (canvas?.hasPointerCapture(id)) {
+        canvas.releasePointerCapture(id);
+      }
+      gesture.cancel(id);
       world.drag = null;
       sync();
     },
@@ -168,12 +172,11 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       world.a = next.a;
       world.b = next.b;
       world.c = next.c;
-      world.armed = false;
-      released = false;
       world.drag = null;
       world.holding = false;
       world.holdFrom = 0;
       world.solved = false;
+      gesture.reset();
       hold.stop();
       if (raf) cancelAnimationFrame(raf);
       raf = 0;

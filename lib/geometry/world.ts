@@ -5,7 +5,6 @@ export type World = {
   b: Vec2;
   c: Vec2;
   drag: VertexId | null;
-  armed: boolean;
   holding: boolean;
   holdFrom: number;
   solved: boolean;
@@ -16,7 +15,6 @@ export const DEFAULT_WORLD: World = {
   b: { x: 0.18, y: 0.82 },
   c: { x: 0.84, y: 0.78 },
   drag: null,
-  armed: false,
   holding: false,
   holdFrom: 0,
   solved: false,
@@ -28,7 +26,6 @@ export function cloneWorld(world: World = DEFAULT_WORLD): World {
     b: { ...world.b },
     c: { ...world.c },
     drag: world.drag,
-    armed: world.armed,
     holding: world.holding,
     holdFrom: world.holdFrom,
     solved: world.solved,
