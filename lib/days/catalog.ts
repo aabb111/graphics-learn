@@ -22,7 +22,7 @@ export const DAYS: DayEntry[] = [
   {
     day: 2,
     title: "顶点颜色插值",
-    lede: "三角里一点的颜色，是三个顶点色按重心坐标加权平均。",
+    lede: "三个角对了，整面就对了。",
     status: "playable",
     accents: [TARGET_CSS.a, TARGET_CSS.b, TARGET_CSS.c],
   },

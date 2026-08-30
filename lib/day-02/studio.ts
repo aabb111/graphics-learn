@@ -1,11 +1,17 @@
 import type { PointerEvent } from "react";
 
 import { drawPlay, drawTarget, huesToColors } from "@/lib/day-02/draw";
-import { createHoldWatch } from "@/lib/geometry/hold";
+import {
+  prefersReducedMotion,
+  ringEnter,
+  ringLeave,
+  type HueRingLook,
+} from "@/lib/day-02/hue-ring";
 import { pointerHue } from "@/lib/day-02/hue";
 import { matchScore } from "@/lib/day-02/match";
 import { cloneWorld, TARGET_HUES, TRIANGLE } from "@/lib/day-02/world";
 import { toPx } from "@/lib/geometry/barycentric";
+import { createHoldWatch } from "@/lib/geometry/hold";
 import { pointerToCss } from "@/lib/geometry/hit";
 import type { VertexId } from "@/lib/geometry/types";
 
@@ -25,6 +31,12 @@ export type ColorStudio = {
 };
 
 const HIT_R = 28;
+
+type RingState = {
+  vertex: VertexId;
+  phase: "in" | "out";
+  from: number;
+};
 
 function hitVertex(
   point: { x: number; y: number },
@@ -46,20 +58,53 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
   let target: HTMLCanvasElement | null = null;
   let playObserver: ResizeObserver | null = null;
   let targetObserver: ResizeObserver | null = null;
+  let ring: RingState | null = null;
+  let raf = 0;
   const hold = createHoldWatch(() => sync());
+
+  function ringLook(): HueRingLook | null {
+    if (!ring || !play) return null;
+    const rect = play.getBoundingClientRect();
+    const origin = toPx(TRIANGLE[ring.vertex], rect.width, rect.height);
+    const hue = world.hues[ring.vertex];
+    const elapsed = performance.now() - ring.from;
+    const reduced = prefersReducedMotion();
+    if (ring.phase === "in") {
+      return { origin, hue, ...ringEnter(elapsed, reduced) };
+    }
+    const leave = ringLeave(elapsed, reduced);
+    if (leave.done) {
+      ring = null;
+      return null;
+    }
+    return { origin, hue, opacity: leave.opacity, scale: 1 };
+  }
+
+  function pulsing() {
+    if (world.holding) return true;
+    if (!ring) return false;
+    const elapsed = performance.now() - ring.from;
+    return ring.phase === "in" ? elapsed < 120 : elapsed < 80;
+  }
 
   function sync() {
     const score = matchScore(huesToColors(world.hues), huesToColors(TARGET_HUES));
-    hold.evaluate(world, score.matched);
+    hold.evaluate(world, !world.drag && score.matched);
     playFill ??= document.createElement("canvas");
     targetFill ??= document.createElement("canvas");
-    if (play) drawPlay(play, playFill, world.hues, world.drag);
+    if (play) drawPlay(play, playFill, world.hues, ringLook());
     if (target) drawTarget(target, targetFill);
     onHud({
       closeness: score.closeness,
       holding: world.holding,
       solved: world.solved,
     });
+    if (pulsing() && !raf) {
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        sync();
+      });
+    }
   }
 
   function observe(
@@ -99,6 +144,7 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
         /* synthetic pointer or already released */
       }
       world.drag = hit;
+      ring = { vertex: hit, phase: "in", from: performance.now() };
       const hue = pointerHue(toPx(TRIANGLE[hit], rect.width, rect.height), css);
       if (hue !== null) world.hues[hit] = hue;
       sync();
@@ -119,6 +165,11 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
         play.releasePointerCapture(event.nativeEvent.pointerId);
       }
       world.drag = null;
+      if (ring) {
+        ring = prefersReducedMotion()
+          ? null
+          : { vertex: ring.vertex, phase: "out", from: performance.now() };
+      }
       sync();
     },
     reset() {
@@ -128,7 +179,10 @@ export function createColorStudio(onHud: (hud: ColorHud) => void): ColorStudio {
       world.holding = false;
       world.holdFrom = 0;
       world.solved = false;
+      ring = null;
       hold.stop();
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
       sync();
     },
   };

@@ -18,6 +18,4 @@ export type Barycentric = {
   degenerate: boolean;
 };
 
-export type DragTarget = "a" | "b" | "c" | "probe";
-
 export type VertexId = "a" | "b" | "c";

@@ -3,7 +3,6 @@ import type { PointerEvent } from "react";
 import {
   barycentric,
   isInside,
-  isNearCenter,
   mixColor,
   signedArea,
   toPx,
@@ -12,8 +11,9 @@ import { VERTEX_RGB } from "@/lib/geometry/colors";
 import { drawScene } from "@/lib/geometry/draw-scene";
 import { hitTarget, pointerToCss } from "@/lib/geometry/hit";
 import { createHoldWatch, holdFill } from "@/lib/geometry/hold";
-import type { Barycentric, RGB } from "@/lib/geometry/types";
+import type { Barycentric, RGB, VertexId } from "@/lib/geometry/types";
 import {
+  centroidOf,
   clampNorm,
   cloneWorld,
   DEFAULT_WORLD,
@@ -28,9 +28,7 @@ export type StudioHud = {
   degenerate: boolean;
   mix: RGB;
   solved: boolean;
-  pinned: boolean;
   holding: boolean;
-  nearCenter: boolean;
 };
 
 export type Studio = {
@@ -52,9 +50,19 @@ function hudFrom(bc: Barycentric, world: World): StudioHud {
     degenerate: bc.degenerate,
     mix: mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c),
     solved: world.solved,
-    pinned: world.pinned,
     holding: world.holding,
-    nearCenter: isNearCenter(bc),
+  };
+}
+
+function weightsAtCentroid(world: World, width: number, height: number) {
+  const a = toPx(world.a, width, height);
+  const b = toPx(world.b, width, height);
+  const c = toPx(world.c, width, height);
+  return {
+    a,
+    b,
+    c,
+    bc: barycentric(toPx(centroidOf(world.a, world.b, world.c), width, height), a, b, c),
   };
 }
 
@@ -64,6 +72,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   let canvas: HTMLCanvasElement | null = null;
   let observer: ResizeObserver | null = null;
   let raf = 0;
+  let grab = { x: 0, y: 0 };
   const hold = createHoldWatch(() => sync());
 
   function size() {
@@ -77,13 +86,9 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const next = size();
     if (!next || next.width < 8 || next.height < 8) return;
     fill ??= document.createElement("canvas");
-    const a = toPx(world.a, next.width, next.height);
-    const b = toPx(world.b, next.width, next.height);
-    const c = toPx(world.c, next.width, next.height);
-    const probe = toPx(world.probe, next.width, next.height);
-    const bc = barycentric(probe, a, b, c);
-    hold.evaluate(world, isNearCenter(bc));
-    drawScene(canvas, fill, { a, b, c, probe }, bc, isInside(bc), holdFill(world));
+    const { a, b, c, bc } = weightsAtCentroid(world, next.width, next.height);
+    hold.evaluate(world, world.moved && !world.drag && !bc.degenerate);
+    drawScene(canvas, fill, { a, b, c }, holdFill(world));
     onHud(hudFrom(bc, world));
     if (world.holding && !raf) {
       raf = requestAnimationFrame(() => {
@@ -96,15 +101,19 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
   function place(event: PointerEvent<HTMLCanvasElement>) {
     const next = size();
     if (!next) return null;
-    const css = pointerToCss(event.nativeEvent, canvas!);
-    return {
-      css,
-      next,
-      norm: {
-        x: clampNorm(css.x / next.width),
-        y: clampNorm(css.y / next.height),
-      },
+    return { css: pointerToCss(event.nativeEvent, canvas!), next };
+  }
+
+  function moveVertex(id: VertexId, css: { x: number; y: number }, width: number, height: number) {
+    const norm = {
+      x: clampNorm((css.x - grab.x) / width),
+      y: clampNorm((css.y - grab.y) / height),
     };
+    const draft = { ...world, [id]: norm };
+    if (Math.abs(signedArea(draft.a, draft.b, draft.c)) < MIN_AREA) return;
+    if (world[id].x === norm.x && world[id].y === norm.y) return;
+    world[id] = norm;
+    world.moved = true;
   }
 
   return {
@@ -120,42 +129,19 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     onPointerDown(event) {
       const placed = place(event);
       if (!placed || !canvas) return;
-      const hit = hitTarget(
-        placed.css,
-        {
-          a: toPx(world.a, placed.next.width, placed.next.height),
-          b: toPx(world.b, placed.next.width, placed.next.height),
-          c: toPx(world.c, placed.next.width, placed.next.height),
-        },
-        toPx(world.probe, placed.next.width, placed.next.height),
-      );
-      if (hit === "a" || hit === "b" || hit === "c") {
-        canvas.setPointerCapture(event.nativeEvent.pointerId);
-        world.drag = hit;
-      } else if (hit === "probe") {
-        canvas.setPointerCapture(event.nativeEvent.pointerId);
-        world.drag = "probe";
-        world.pinned = true;
-      } else if (!world.pinned) {
-        canvas.setPointerCapture(event.nativeEvent.pointerId);
-        world.drag = "probe";
-        world.probe = placed.norm;
-      } else {
-        return;
-      }
+      const { a, b, c } = weightsAtCentroid(world, placed.next.width, placed.next.height);
+      const hit = hitTarget(placed.css, { a, b, c });
+      if (!hit) return;
+      const origin = hit === "a" ? a : hit === "b" ? b : c;
+      grab = { x: placed.css.x - origin.x, y: placed.css.y - origin.y };
+      canvas.setPointerCapture(event.nativeEvent.pointerId);
+      world.drag = hit;
       sync();
     },
     onPointerMove(event) {
       const placed = place(event);
-      if (!placed) return;
-      if (world.drag === "a" || world.drag === "b" || world.drag === "c") {
-        const draft = { ...world, [world.drag]: placed.norm };
-        if (Math.abs(signedArea(draft.a, draft.b, draft.c)) >= MIN_AREA) {
-          world[world.drag] = placed.norm;
-        }
-      } else if (world.drag === "probe" || !world.pinned) {
-        world.probe = placed.norm;
-      }
+      if (!placed || !world.drag) return;
+      moveVertex(world.drag, placed.css, placed.next.width, placed.next.height);
       sync();
     },
     onPointerUp(event) {
@@ -170,8 +156,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
       world.a = next.a;
       world.b = next.b;
       world.c = next.c;
-      world.probe = next.probe;
-      world.pinned = false;
+      world.moved = false;
       world.drag = null;
       world.holding = false;
       world.holdFrom = 0;
@@ -186,7 +171,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
 
 export const INITIAL_HUD = hudFrom(
   barycentric(
-    toPx(DEFAULT_WORLD.probe, 100, 100),
+    toPx(centroidOf(DEFAULT_WORLD.a, DEFAULT_WORLD.b, DEFAULT_WORLD.c), 100, 100),
     toPx(DEFAULT_WORLD.a, 100, 100),
     toPx(DEFAULT_WORLD.b, 100, 100),
     toPx(DEFAULT_WORLD.c, 100, 100),

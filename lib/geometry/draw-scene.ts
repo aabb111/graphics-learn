@@ -1,8 +1,6 @@
-import { mixColor } from "@/lib/geometry/barycentric";
-import { VERTEX_RGB } from "@/lib/geometry/colors";
 import { drawOverlay } from "@/lib/geometry/overlay";
 import { rasterizeTriangle } from "@/lib/geometry/rasterize";
-import type { Barycentric, Vec2 } from "@/lib/geometry/types";
+import type { Vec2 } from "@/lib/geometry/types";
 
 export function sizeCanvas(canvas: HTMLCanvasElement) {
   const rect = canvas.getBoundingClientRect();
@@ -19,9 +17,7 @@ export function sizeCanvas(canvas: HTMLCanvasElement) {
 export function drawScene(
   canvas: HTMLCanvasElement,
   fill: HTMLCanvasElement,
-  points: { a: Vec2; b: Vec2; c: Vec2; probe: Vec2 },
-  bc: Barycentric,
-  inside: boolean,
+  points: { a: Vec2; b: Vec2; c: Vec2 },
   ringFill = 0,
 ) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
@@ -42,13 +38,5 @@ export function drawScene(
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, cssW, cssH);
   ctx.drawImage(fill, 0, 0, cssW, cssH);
-
-  const mix = mixColor(bc, VERTEX_RGB.a, VERTEX_RGB.b, VERTEX_RGB.c);
-  drawOverlay(ctx, {
-    ...points,
-    mix,
-    inside,
-    degenerate: bc.degenerate,
-    ringFill,
-  });
+  drawOverlay(ctx, { ...points, ringFill });
 }

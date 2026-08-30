@@ -1,9 +1,9 @@
 import { hslToRgb, rgbToCss } from "@/lib/day-02/hue";
+import { drawHueRing, type HueRingLook } from "@/lib/day-02/hue-ring";
 import { TARGET_HUES, TRIANGLE, type Hues } from "@/lib/day-02/world";
 import { sizeCanvas } from "@/lib/geometry/draw-scene";
 import { rasterizeTriangle } from "@/lib/geometry/rasterize";
 import { toPx } from "@/lib/geometry/barycentric";
-import type { VertexId } from "@/lib/geometry/types";
 
 function huesToColors(hues: Hues) {
   return {
@@ -84,7 +84,7 @@ export function drawPlay(
   canvas: HTMLCanvasElement,
   fill: HTMLCanvasElement,
   hues: Hues,
-  drag: VertexId | null,
+  ring: HueRingLook | null,
 ) {
   const painted = paintFill(canvas, fill, hues);
   if (!painted) return;
@@ -92,14 +92,7 @@ export function drawPlay(
   const { dpr } = sizeCanvas(canvas);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const colors = huesToColors(hues);
-  if (drag) {
-    const center = drag === "a" ? a : drag === "b" ? b : c;
-    ctx.beginPath();
-    ctx.arc(center.x, center.y, 36, 0, Math.PI * 2);
-    ctx.strokeStyle = "rgb(20 20 20 / 0.2)";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
+  if (ring) drawHueRing(ctx, ring);
   drawKnob(ctx, a, rgbToCss(colors.a), PLAY_KNOB_R, "A");
   drawKnob(ctx, b, rgbToCss(colors.b), PLAY_KNOB_R, "B");
   drawKnob(ctx, c, rgbToCss(colors.c), PLAY_KNOB_R, "C");

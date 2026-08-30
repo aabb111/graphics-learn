@@ -1,4 +1,4 @@
-import type { DragTarget, Vec2 } from "@/lib/geometry/types";
+import type { Vec2, VertexId } from "@/lib/geometry/types";
 
 function distance2(a: Vec2, b: Vec2) {
   const dx = a.x - b.x;
@@ -9,24 +9,15 @@ function distance2(a: Vec2, b: Vec2) {
 export function hitTarget(
   point: Vec2,
   vertices: { a: Vec2; b: Vec2; c: Vec2 },
-  probe: Vec2,
   radius = 16,
-): DragTarget | null {
+): VertexId | null {
   const limit = radius * radius;
-  const verticesFirst: Array<["a" | "b" | "c", Vec2]> = [
-    ["a", vertices.a],
-    ["b", vertices.b],
-    ["c", vertices.c],
-  ];
+  const order: VertexId[] = ["a", "b", "c"];
 
-  for (const [id, vertex] of verticesFirst) {
-    if (distance2(point, vertex) <= limit) {
+  for (const id of order) {
+    if (distance2(point, vertices[id]) <= limit) {
       return id;
     }
-  }
-
-  if (distance2(point, probe) <= limit) {
-    return "probe";
   }
 
   return null;

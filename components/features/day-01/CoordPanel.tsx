@@ -18,14 +18,7 @@ export function CoordPanel({ hud, onReset }: CoordPanelProps) {
           重心坐标把三角形涂满
         </h1>
       </div>
-      <div className="flex flex-col gap-3">
-        {hud.solved ? null : (
-          <p className="text-[14px] leading-6 text-muted-foreground">
-            α、β、γ 是这一点到三个顶点的权重。正中时三个数一样，都是 1/3。
-          </p>
-        )}
-        <WeightBars hud={hud} />
-      </div>
+      <WeightBars hud={hud} />
       {hud.solved ? (
         <WinFeedback onReset={onReset} />
       ) : (

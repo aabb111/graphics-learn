@@ -14,7 +14,7 @@ export function WinFeedback({ onReset }: WinFeedbackProps) {
       <p className="motion-pass-title text-[14px] leading-6 text-success">过关了</p>
       <PassStamp />
       <p className="motion-pass-late text-[14px] leading-6">
-        三个数都是 1/3，因为离三个顶点一样远。
+        离三个角一样远，所以都是三分之一。
       </p>
       <div className="motion-pass-late flex flex-nowrap items-center gap-2">
         <Link href="/days/2" className={cn(buttonVariants({ variant: "default" }), "h-8")}>
