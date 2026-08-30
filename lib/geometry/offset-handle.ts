@@ -1,9 +1,20 @@
-import { clampToTriangle } from "@/lib/geometry/sample";
+import { SAMPLE_R } from "@/lib/geometry/sample";
 import type { Vec2 } from "@/lib/geometry/types";
 
 export const TOUCH_LIFT = 44;
 const LIFT_MS = 120;
 const STEM_MS = 80;
+const EDGE = SAMPLE_R + 2;
+
+export function offsetFromContact(contact: Vec2, width: number): Vec2 {
+  const up = { x: contact.x, y: contact.y - TOUCH_LIFT };
+  if (up.y >= EDGE) return up;
+  const rightRoom = width - contact.x;
+  if (rightRoom > contact.x) {
+    return { x: contact.x + TOUCH_LIFT, y: contact.y };
+  }
+  return { x: contact.x - TOUCH_LIFT, y: contact.y };
+}
 
 type Phase = "idle" | "in" | "drag" | "out";
 
@@ -33,9 +44,11 @@ export function createOffsetHandle() {
   let frozen: Vec2 | null = null;
   let from = 0;
 
-  function dest(a: Vec2, b: Vec2, c: Vec2) {
+  let canvas = { width: 0, height: 0 };
+
+  function dest() {
     if (!contact) return null;
-    return clampToTriangle({ x: contact.x, y: contact.y - TOUCH_LIFT }, a, b, c);
+    return offsetFromContact(contact, canvas.width);
   }
 
   return {
@@ -70,10 +83,11 @@ export function createOffsetHandle() {
       phase = reducedMotion() ? "idle" : "out";
       if (phase === "idle") contact = null;
     },
-    place(a: Vec2, b: Vec2, c: Vec2): Vec2 | null {
+    place(width: number, height: number): Vec2 | null {
+      canvas = { width, height };
       if (phase === "idle") return null;
       if (phase === "out") return frozen;
-      const to = dest(a, b, c);
+      const to = dest();
       if (!to || !liftFrom) return frozen;
       if (phase === "drag") {
         frozen = to;

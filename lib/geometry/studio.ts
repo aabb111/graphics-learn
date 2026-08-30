@@ -103,12 +103,7 @@ export function createStudio(onHud: (hud: StudioHud) => void): Studio {
     const next = size();
     if (!next || next.width < 8 || next.height < 8) return;
     fill ??= document.createElement("canvas");
-    const verts = {
-      a: toPx(world.a, next.width, next.height),
-      b: toPx(world.b, next.width, next.height),
-      c: toPx(world.c, next.width, next.height),
-    };
-    const lifted = offset.place(verts.a, verts.b, verts.c);
+    const lifted = offset.place(next.width, next.height);
     if (lifted) {
       world.sample = { x: lifted.x / next.width, y: lifted.y / next.height };
     }
