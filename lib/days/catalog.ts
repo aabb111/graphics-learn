@@ -33,6 +33,13 @@ export const DAYS: DayEntry[] = [
     status: "playable",
     accents: [VERTEX_HEX.a, VERTEX_HEX.b, VERTEX_HEX.c],
   },
+  {
+    day: 4,
+    title: "深度缓冲",
+    lede: "近的盖住远的。",
+    status: "playable",
+    accents: [VERTEX_HEX.a, VERTEX_HEX.b, VERTEX_HEX.c],
+  },
 ];
 
 export function getDay(day: number) {
