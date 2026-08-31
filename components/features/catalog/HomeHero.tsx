@@ -13,7 +13,7 @@ export function HomeHero() {
         拖明白。
       </h1>
       <p className="mt-6 max-w-md text-[14px] leading-6 text-muted-foreground">
-        三个顶点的颜色，怎么涂满整个三角形。
+        三个角各占多少，颜色怎么铺开。
       </p>
       <div className="mt-8">
         <Link

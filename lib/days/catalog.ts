@@ -14,7 +14,7 @@ export type DayEntry = {
 export const DAYS: DayEntry[] = [
   {
     day: 1,
-    title: "重心坐标把三角形涂满",
+    title: "三个角各占多少",
     lede: "三个数决定三角形里每一点的颜色。",
     status: "playable",
     accents: [VERTEX_HEX.a, VERTEX_HEX.b, VERTEX_HEX.c],

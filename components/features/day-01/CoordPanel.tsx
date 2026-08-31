@@ -16,7 +16,7 @@ export function CoordPanel({ hud, onReset }: CoordPanelProps) {
       <div className="flex flex-col gap-3">
         <p className="text-[11px] tracking-[0.16em] text-muted-foreground">第 1 关</p>
         <h1 className="text-[28px] font-normal tracking-tight">
-          重心坐标把三角形涂满
+          三个角各占多少
         </h1>
       </div>
       <WeightBars hud={hud} />
@@ -25,8 +25,8 @@ export function CoordPanel({ hud, onReset }: CoordPanelProps) {
       ) : (
         <div className="flex flex-col gap-3">
           <LessonNote
-            ink="这叫重心坐标。点离哪个角近，那个角占的份就多。"
-            mute="电脑给三角上色、贴图，都先算这三个数。"
+            ink="这三个数，是这一点里三个角各占多少。靠近就接近 1，正中都是三分之一。"
+            mute="这叫重心坐标。上色、贴图都先算它。"
           />
           <HoldHint show={hud.holding} />
           <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>

@@ -34,7 +34,7 @@ export function TriangleStage({ studio, solved, cursor }: TriangleStageProps) {
     <div className="flex flex-1 flex-col">
       {solved ? null : (
         <p className="mb-3 text-[14px] leading-6 text-foreground break-keep">
-          拖中间这个点。三个数会变。拖到正中，三个数一样。
+          拖这个点。靠近哪个角，哪个数就变大。
         </p>
       )}
       <div
@@ -63,7 +63,7 @@ export function TriangleStage({ studio, solved, cursor }: TriangleStageProps) {
             cursor === "grab" && "cursor-grab",
             cursor === "grabbing" && "cursor-grabbing",
           )}
-          aria-label="拖中间这个点。三个数会变。拖到正中，三个数一样。"
+          aria-label="拖这个点。靠近哪个角，哪个数就变大。"
         />
       </div>
     </div>
