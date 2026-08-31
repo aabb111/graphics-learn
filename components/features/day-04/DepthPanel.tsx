@@ -19,7 +19,7 @@ export function DepthPanel({ hud, onReset }: DepthPanelProps) {
       </div>
       {hud.solved ? <WinFeedback onReset={onReset} /> : <HoldHint show={hud.holding} />}
       <LessonBlock
-        ink="叠在一起只留一个颜色，近的赢。两个三角叠在同一处时，只留更近的颜色。远的不是没了，是比下去了。"
+        ink="两个三角叠在一起时，只留更近的那块颜色。远的不是没了，是比下去了。"
         mute="这叫深度缓冲。"
         links={L4_LINKS}
       />

@@ -20,7 +20,7 @@ export function RasterPanel({ hud, onReset }: RasterPanelProps) {
       {hud.solved ? <WinFeedback onReset={onReset} /> : <HoldHint show={hud.holding} />}
       <LessonBlock
         ink="屏幕是格子。只看格子中心在不在三角里，在就整块涂上，斜边变成台阶。"
-        mute="这叫光栅化。游戏里的三角，最后都变成这些格子。"
+        mute="这叫光栅化。"
         links={L3_LINKS}
       />
       {hud.solved ? null : (
