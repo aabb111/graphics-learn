@@ -1,0 +1,23 @@
+import { PassStamp } from "@/components/features/day-01/PassStamp";
+import { Button } from "@/components/ui/button";
+
+type WinFeedbackProps = {
+  onReset: () => void;
+};
+
+export function WinFeedback({ onReset }: WinFeedbackProps) {
+  return (
+    <section className="flex flex-col gap-3">
+      <p className="motion-pass-title text-[14px] leading-6 text-success">过关了</p>
+      <PassStamp mark="3" />
+      <p className="motion-pass-late text-[14px] leading-6">
+        斜边变成台阶了。因为只看格子中心在不在里面。
+      </p>
+      <div className="motion-pass-late flex flex-nowrap items-center gap-2">
+        <Button variant="ghost" className="h-8" onClick={onReset}>
+          再玩一次
+        </Button>
+      </div>
+    </section>
+  );
+}

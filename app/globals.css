@@ -183,7 +183,9 @@
 }
 
 .day1-play,
-.day1-play canvas {
+.day1-play canvas,
+.play-canvas,
+.play-canvas canvas {
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-drag: none;

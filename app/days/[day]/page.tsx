@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { UpcomingDay } from "@/components/features/catalog/UpcomingDay";
 import { Day01Studio } from "@/components/features/day-01/Day01Studio";
 import { Day02Studio } from "@/components/features/day-02/Day02Studio";
+import { Day03Studio } from "@/components/features/day-03/Day03Studio";
 import { SiteFooter } from "@/components/features/site/SiteFooter";
 import { SiteHeader } from "@/components/features/site/SiteHeader";
 import { DAYS, getDay } from "@/lib/days/catalog";
@@ -39,6 +40,8 @@ export default async function DayPage({
           <Day01Studio />
         ) : entry.day === 2 && entry.status === "playable" ? (
           <Day02Studio />
+        ) : entry.day === 3 && entry.status === "playable" ? (
+          <Day03Studio />
         ) : (
           <UpcomingDay entry={entry} />
         )}

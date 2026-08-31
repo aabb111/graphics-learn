@@ -1,0 +1,35 @@
+import { LessonNote } from "@/components/features/lesson/LessonNote";
+import { HoldHint } from "@/components/features/motion/HoldHint";
+import { WinFeedback } from "@/components/features/day-03/WinFeedback";
+import { Button } from "@/components/ui/button";
+import type { RasterHud } from "@/lib/day-03/studio";
+
+type RasterPanelProps = {
+  hud: RasterHud;
+  onReset: () => void;
+};
+
+export function RasterPanel({ hud, onReset }: RasterPanelProps) {
+  return (
+    <aside className="flex flex-col gap-8 md:w-[340px] md:shrink-0">
+      <div className="flex flex-col gap-3">
+        <p className="text-[11px] tracking-[0.16em] text-muted-foreground">第 3 关</p>
+        <h1 className="text-[28px] font-normal tracking-tight">光栅化成像素</h1>
+      </div>
+      {hud.solved ? (
+        <WinFeedback onReset={onReset} />
+      ) : (
+        <div className="flex flex-col gap-3">
+          <LessonNote
+            ink="屏幕没有真正的斜边，只有像素。中心在里面，这块就涂上。"
+            mute="这叫光栅化。"
+          />
+          <HoldHint show={hud.holding} />
+          <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>
+            重置格子
+          </Button>
+        </div>
+      )}
+    </aside>
+  );
+}

@@ -26,6 +26,13 @@ export const DAYS: DayEntry[] = [
     status: "playable",
     accents: [TARGET_CSS.a, TARGET_CSS.b, TARGET_CSS.c],
   },
+  {
+    day: 3,
+    title: "光栅化成像素",
+    lede: "斜边变成一块一块的像素。",
+    status: "playable",
+    accents: [VERTEX_HEX.a, VERTEX_HEX.b, VERTEX_HEX.c],
+  },
 ];
 
 export function getDay(day: number) {
