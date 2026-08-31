@@ -1,5 +1,4 @@
-import { LessonNote } from "@/components/features/lesson/LessonNote";
-import { RelatedLinks } from "@/components/features/lesson/RelatedLinks";
+import { LessonBlock } from "@/components/features/lesson/LessonBlock";
 import { HoldHint } from "@/components/features/motion/HoldHint";
 import { WeightBars } from "@/components/features/day-01/WeightBars";
 import { WinFeedback } from "@/components/features/day-01/WinFeedback";
@@ -22,22 +21,17 @@ export function CoordPanel({ hud, onReset }: CoordPanelProps) {
         </h1>
       </div>
       <WeightBars hud={hud} />
-      {hud.solved ? (
-        <WinFeedback onReset={onReset} />
-      ) : (
-        <div className="flex flex-col gap-3">
-          <LessonNote
-            ink="三角里任意一点都能拆成三个角各占多少，三个数加起来是 1。靠近哪个角，哪个数越接近 1。"
-            mute="这叫重心坐标。上色、贴图都先算它。"
-          />
-          <RelatedLinks links={L1_LINKS} />
-          <HoldHint show={hud.holding} />
-          <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>
-            重置三角形
-          </Button>
-        </div>
+      {hud.solved ? <WinFeedback onReset={onReset} /> : <HoldHint show={hud.holding} />}
+      <LessonBlock
+        ink="三角里任意一点都能拆成三个角各占多少，三个数加起来是 1。靠近哪个角，哪个数越接近 1。"
+        mute="这叫重心坐标。上色、贴图都先算它。"
+        links={L1_LINKS}
+      />
+      {hud.solved ? null : (
+        <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>
+          重置三角形
+        </Button>
       )}
-      {hud.solved ? <RelatedLinks links={L1_LINKS} /> : null}
     </aside>
   );
 }

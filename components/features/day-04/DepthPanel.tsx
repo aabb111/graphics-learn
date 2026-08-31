@@ -1,5 +1,4 @@
-import { LessonNote } from "@/components/features/lesson/LessonNote";
-import { RelatedLinks } from "@/components/features/lesson/RelatedLinks";
+import { LessonBlock } from "@/components/features/lesson/LessonBlock";
 import { HoldHint } from "@/components/features/motion/HoldHint";
 import { WinFeedback } from "@/components/features/day-04/WinFeedback";
 import { Button } from "@/components/ui/button";
@@ -18,22 +17,17 @@ export function DepthPanel({ hud, onReset }: DepthPanelProps) {
         <p className="text-[11px] tracking-[0.16em] text-muted-foreground">第 4 关</p>
         <h1 className="text-[28px] font-normal tracking-tight">深度缓冲</h1>
       </div>
-      {hud.solved ? (
-        <WinFeedback onReset={onReset} />
-      ) : (
-        <div className="flex flex-col gap-3">
-          <LessonNote
-            ink="叠在一起只留一个颜色，近的赢。两个三角叠在同一处时，只留更近的颜色。远的不是没了，是比下去了。"
-            mute="这叫深度缓冲。"
-          />
-          <RelatedLinks links={L4_LINKS} />
-          <HoldHint show={hud.holding} />
-          <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>
-            重置远近
-          </Button>
-        </div>
+      {hud.solved ? <WinFeedback onReset={onReset} /> : <HoldHint show={hud.holding} />}
+      <LessonBlock
+        ink="叠在一起只留一个颜色，近的赢。两个三角叠在同一处时，只留更近的颜色。远的不是没了，是比下去了。"
+        mute="这叫深度缓冲。"
+        links={L4_LINKS}
+      />
+      {hud.solved ? null : (
+        <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>
+          重置远近
+        </Button>
       )}
-      {hud.solved ? <RelatedLinks links={L4_LINKS} /> : null}
     </aside>
   );
 }
