@@ -71,6 +71,8 @@ function drawSample(ctx: CanvasRenderingContext2D, point: Vec2, fill: RGB) {
   ctx.closePath();
   ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
   ctx.fill();
+  ctx.fillStyle = "rgb(20 20 20 / 0.18)";
+  ctx.fill();
   ctx.beginPath();
   ctx.arc(point.x, point.y, SAMPLE_R - SAMPLE_INSET / 2, 0, Math.PI * 2);
   ctx.lineWidth = SAMPLE_INSET;
