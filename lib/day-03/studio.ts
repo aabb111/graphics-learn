@@ -12,8 +12,9 @@ import {
 import {
   createWorld,
   emptyFlags,
-  emptyTimes,
-  FLASH_MS,
+  emptyLevels,
+  lightAt,
+  stillTweening,
   type RasterWorld,
 } from "@/lib/day-03/world";
 import { pointerToCss } from "@/lib/geometry/hit";
@@ -31,6 +32,10 @@ export type RasterStudio = {
 };
 
 export const INITIAL_HUD: RasterHud = { solved: false, holding: false };
+
+function reducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
 
 export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudio {
   const world: RasterWorld = createWorld(0);
@@ -57,7 +62,8 @@ export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudi
     cells = buildCells(grid);
     if (resized) {
       world.lit = emptyFlags(count);
-      world.flashes = emptyTimes(count);
+      world.from = emptyLevels(count);
+      world.started = emptyLevels(count);
       world.solved = false;
       world.holding = false;
       world.holdFrom = 0;
@@ -65,8 +71,8 @@ export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudi
     return next;
   }
 
-  function flashing(now: number) {
-    return world.flashes.some((until) => until > now);
+  function lights(now: number, reduced: boolean) {
+    return cells.map((cell) => lightAt(world, cell.i, now, reduced));
   }
 
   function sync() {
@@ -74,11 +80,12 @@ export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudi
     const next = fit();
     if (!next || !layout) return;
     const now = performance.now();
+    const reduced = reducedMotion();
     const ready = allMatched(cells, world.lit) && !world.solved;
     hold.evaluate(world, ready);
-    drawRaster(canvas, layout, cells, world.lit, world.flashes, now);
+    drawRaster(canvas, layout, cells, lights(now, reduced));
     onHud({ solved: world.solved, holding: world.holding });
-    if ((world.holding || flashing(now)) && !raf) {
+    if ((world.holding || stillTweening(world, now, reduced)) && !raf) {
       raf = requestAnimationFrame(() => {
         raf = 0;
         sync();
@@ -99,27 +106,20 @@ export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudi
     onPointerDown(event) {
       if (world.solved || !canvas || !layout) return;
       event.preventDefault();
-      const next = size();
-      if (!next) return;
       const css = pointerToCss(event.nativeEvent, canvas);
       const cell = hitCell(css, layout, cells);
-      if (!cell) return;
-      if (cell.inside) {
-        world.lit[cell.i] = !world.lit[cell.i];
-      } else {
-        world.lit[cell.i] = false;
-        world.flashes[cell.i] = performance.now() + FLASH_MS;
-      }
-      try {
-        canvas.setPointerCapture(event.nativeEvent.pointerId);
-      } catch {
-        /* already released */
-      }
+      if (!cell || !cell.inside) return;
+      const now = performance.now();
+      const reduced = reducedMotion();
+      world.from[cell.i] = lightAt(world, cell.i, now, reduced);
+      world.lit[cell.i] = !world.lit[cell.i];
+      world.started[cell.i] = now;
       sync();
     },
     reset() {
       world.lit = emptyFlags(cells.length);
-      world.flashes = emptyTimes(cells.length);
+      world.from = emptyLevels(cells.length);
+      world.started = emptyLevels(cells.length);
       world.holding = false;
       world.holdFrom = 0;
       world.solved = false;

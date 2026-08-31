@@ -5,9 +5,8 @@ import type { Vec2 } from "@/lib/geometry/types";
 import { CELL, CENTER_R, VERTEX_R } from "@/lib/day-03/world";
 import type { Cell, GridLayout } from "@/lib/day-03/grid";
 
-const LIT = "#1A7F4B";
-const INK = "rgb(20 20 20 / 0.55)";
-const FLASH = "rgb(20 20 20 / 0.22)";
+const LIT = { r: 26, g: 127, b: 75 };
+const INK = { r: 20, g: 20, b: 20, a: 0.55 };
 
 function fillTriangle(
   ctx: CanvasRenderingContext2D,
@@ -45,15 +44,14 @@ function drawGrid(ctx: CanvasRenderingContext2D, layout: GridLayout) {
   ctx.stroke();
 }
 
-function drawDot(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  fill: string,
-) {
+function drawDot(ctx: CanvasRenderingContext2D, x: number, y: number, t: number) {
+  const r = INK.r + (255 - INK.r) * t;
+  const g = INK.g + (255 - INK.g) * t;
+  const b = INK.b + (255 - INK.b) * t;
+  const a = INK.a + (1 - INK.a) * t;
   ctx.beginPath();
   ctx.arc(x, y, CENTER_R, 0, Math.PI * 2);
-  ctx.fillStyle = fill;
+  ctx.fillStyle = `rgb(${r} ${g} ${b} / ${a})`;
   ctx.fill();
 }
 
@@ -68,9 +66,7 @@ export function drawRaster(
   canvas: HTMLCanvasElement,
   layout: GridLayout,
   cells: Cell[],
-  lit: boolean[],
-  flashes: number[],
-  now: number,
+  lights: number[],
 ) {
   const { cssW, cssH, dpr } = sizeCanvas(canvas);
   const ctx = canvas.getContext("2d");
@@ -79,17 +75,16 @@ export function drawRaster(
   ctx.clearRect(0, 0, cssW, cssH);
   fillTriangle(ctx, layout.a, layout.b, layout.c);
   for (const cell of cells) {
-    if (lit[cell.i]) {
-      ctx.fillStyle = LIT;
-      ctx.fillRect(cell.x, cell.y, CELL, CELL);
-    } else if (flashes[cell.i] > now) {
-      ctx.fillStyle = FLASH;
-      ctx.fillRect(cell.x, cell.y, CELL, CELL);
-    }
+    const t = lights[cell.i] ?? 0;
+    if (t <= 0) continue;
+    ctx.globalAlpha = t;
+    ctx.fillStyle = `rgb(${LIT.r} ${LIT.g} ${LIT.b})`;
+    ctx.fillRect(cell.x, cell.y, CELL, CELL);
+    ctx.globalAlpha = 1;
   }
   drawGrid(ctx, layout);
   for (const cell of cells) {
-    drawDot(ctx, cell.cx, cell.cy, lit[cell.i] ? "#ffffff" : INK);
+    drawDot(ctx, cell.cx, cell.cy, lights[cell.i] ?? 0);
   }
   drawVertex(ctx, layout.a, VERTEX_HEX.a);
   drawVertex(ctx, layout.b, VERTEX_HEX.b);

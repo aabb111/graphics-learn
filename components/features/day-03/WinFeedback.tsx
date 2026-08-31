@@ -1,5 +1,8 @@
+import Link from "next/link";
+
 import { PassStamp } from "@/components/features/day-01/PassStamp";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type WinFeedbackProps = {
   onReset: () => void;
@@ -17,6 +20,9 @@ export function WinFeedback({ onReset }: WinFeedbackProps) {
         <Button variant="ghost" className="h-8" onClick={onReset}>
           再玩一次
         </Button>
+        <Link href="/" className={cn(buttonVariants({ variant: "default" }), "h-8")}>
+          回首页
+        </Link>
       </div>
     </section>
   );

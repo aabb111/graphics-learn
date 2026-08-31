@@ -21,8 +21,8 @@ export function RasterPanel({ hud, onReset }: RasterPanelProps) {
       ) : (
         <div className="flex flex-col gap-3">
           <LessonNote
-            ink="屏幕没有真正的斜边，只有像素。中心在里面，这块就涂上。"
-            mute="这叫光栅化。"
+            ink="没有斜边，只看中心在不在里面。"
+            mute="这叫光栅化。游戏里的三角，最后都变成这些格子。"
           />
           <HoldHint show={hud.holding} />
           <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>

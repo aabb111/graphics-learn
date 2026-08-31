@@ -193,8 +193,13 @@
   touch-action: none;
 }
 
+.hold-slot {
+  transition-property: grid-template-rows;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .motion-hold {
+  .motion-hold,
+  .hold-slot {
     transition-duration: 0ms;
   }
 
