@@ -1,8 +1,10 @@
 import { LessonNote } from "@/components/features/lesson/LessonNote";
+import { RelatedLinks } from "@/components/features/lesson/RelatedLinks";
 import { HoldHint } from "@/components/features/motion/HoldHint";
 import { WinFeedback } from "@/components/features/day-03/WinFeedback";
 import { Button } from "@/components/ui/button";
 import type { RasterHud } from "@/lib/day-03/studio";
+import { L3_LINKS } from "@/lib/days/sources";
 
 type RasterPanelProps = {
   hud: RasterHud;
@@ -21,15 +23,17 @@ export function RasterPanel({ hud, onReset }: RasterPanelProps) {
       ) : (
         <div className="flex flex-col gap-3">
           <LessonNote
-            ink="没有斜边，只看中心在不在里面。"
+            ink="屏幕是格子。只看格子中心在不在三角里，在就整块涂上，斜边变成台阶。"
             mute="这叫光栅化。游戏里的三角，最后都变成这些格子。"
           />
+          <RelatedLinks links={L3_LINKS} />
           <HoldHint show={hud.holding} />
           <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>
             重置格子
           </Button>
         </div>
       )}
+      {hud.solved ? <RelatedLinks links={L3_LINKS} /> : null}
     </aside>
   );
 }

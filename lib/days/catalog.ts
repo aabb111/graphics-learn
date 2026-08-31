@@ -38,7 +38,7 @@ export const DAYS: DayEntry[] = [
     title: "深度缓冲",
     lede: "近的盖住远的。",
     status: "playable",
-    accents: [VERTEX_HEX.a, VERTEX_HEX.b, VERTEX_HEX.c],
+    accents: [VERTEX_HEX.a, VERTEX_HEX.c, VERTEX_HEX.a],
   },
 ];
 

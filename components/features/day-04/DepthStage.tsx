@@ -28,7 +28,7 @@ export function DepthStage({ studio, solved, cursor }: DepthStageProps) {
     <div className="flex min-w-0 flex-1 flex-col">
       {solved ? null : (
         <p className="mb-3 text-[14px] leading-6 text-foreground break-keep">
-          拉拉两个三角的远近。叠在一起时，近的盖住远的。
+          拖每条边上的远近。近的盖住远的。
         </p>
       )}
       <div className="flex flex-col gap-6">
@@ -52,7 +52,7 @@ export function DepthStage({ studio, solved, cursor }: DepthStageProps) {
               cursor === "grab" && "cursor-grab",
               cursor === "grabbing" && "cursor-grabbing",
             )}
-            aria-label="拉拉两个三角的远近。叠在一起时，近的盖住远的。"
+            aria-label="拖每条边上的远近。近的盖住远的。"
           />
         </div>
         <div className="mx-auto flex w-[40%] flex-col gap-2">

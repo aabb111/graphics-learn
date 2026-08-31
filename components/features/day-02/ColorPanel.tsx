@@ -1,10 +1,12 @@
 import Link from "next/link";
 
 import { LessonNote } from "@/components/features/lesson/LessonNote";
+import { RelatedLinks } from "@/components/features/lesson/RelatedLinks";
 import { MatchMeter } from "@/components/features/day-02/MatchMeter";
 import { WinFeedback } from "@/components/features/day-02/WinFeedback";
 import { Button, buttonVariants } from "@/components/ui/button";
 import type { ColorHud } from "@/lib/day-02/studio";
+import { L2_LINKS } from "@/lib/days/sources";
 import { cn } from "@/lib/utils";
 
 type ColorPanelProps = {
@@ -24,9 +26,10 @@ export function ColorPanel({ hud, onReset }: ColorPanelProps) {
       ) : (
         <div className="flex flex-col gap-3">
           <LessonNote
-            ink="三个角各自带一种颜色，三角里每一点都是它们兑出来的。"
-            mute="顶点只存三个色，中间那些点不用再存。"
+            ink="三个角各自带颜色，中间每一点用那三个数兑出来。整面渐变不用存每一个点的色。"
+            mute="这叫顶点颜色插值。"
           />
+          <RelatedLinks links={L2_LINKS} />
           <MatchMeter hud={hud} />
         </div>
       )}
@@ -49,6 +52,7 @@ export function ColorPanel({ hud, onReset }: ColorPanelProps) {
           </Button>
         )}
       </div>
+      {hud.solved ? <RelatedLinks links={L2_LINKS} /> : null}
     </aside>
   );
 }

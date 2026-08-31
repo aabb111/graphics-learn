@@ -1,8 +1,10 @@
 import { LessonNote } from "@/components/features/lesson/LessonNote";
+import { RelatedLinks } from "@/components/features/lesson/RelatedLinks";
 import { HoldHint } from "@/components/features/motion/HoldHint";
 import { WinFeedback } from "@/components/features/day-04/WinFeedback";
 import { Button } from "@/components/ui/button";
 import type { DepthHud } from "@/lib/day-04/studio";
+import { L4_LINKS } from "@/lib/days/sources";
 
 type DepthPanelProps = {
   hud: DepthHud;
@@ -21,15 +23,17 @@ export function DepthPanel({ hud, onReset }: DepthPanelProps) {
       ) : (
         <div className="flex flex-col gap-3">
           <LessonNote
-            ink="重叠的格子只留一个颜色，近的赢。"
+            ink="叠在一起只留一个颜色，近的赢。两个三角叠在同一处时，只留更近的颜色。远的不是没了，是比下去了。"
             mute="这叫深度缓冲。"
           />
+          <RelatedLinks links={L4_LINKS} />
           <HoldHint show={hud.holding} />
           <Button variant="ghost" className="h-8 w-fit" onClick={onReset}>
             重置远近
           </Button>
         </div>
       )}
+      {hud.solved ? <RelatedLinks links={L4_LINKS} /> : null}
     </aside>
   );
 }

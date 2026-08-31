@@ -1,4 +1,3 @@
-import { VERTEX_HEX } from "@/lib/geometry/colors";
 import type { Vec2 } from "@/lib/geometry/types";
 
 export type TriId = "a" | "b";
@@ -23,8 +22,8 @@ export const SHAPE: Record<TriId, TriShape> = {
 };
 
 export const FILL: Record<TriId, string> = {
-  a: VERTEX_HEX.a,
-  b: VERTEX_HEX.b,
+  a: "rgb(47, 79, 224)",
+  b: "rgb(214, 168, 34)",
 };
 
 export const SPAWN = { a: 0.72, b: 0.28 };

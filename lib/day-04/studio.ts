@@ -1,7 +1,15 @@
 import type { PointerEvent } from "react";
 
 import { drawStack } from "@/lib/day-04/draw";
-import { clampDepth, hitFront, stackMatch } from "@/lib/day-04/stack";
+import { stackMatch } from "@/lib/day-04/stack";
+import {
+  HANDLE_HIT,
+  TOUCH_HIT,
+  depthFromY,
+  handleCenter,
+  hitHandle,
+  tracksOf,
+} from "@/lib/day-04/sliders";
 import {
   createWorld,
   resetDepths,
@@ -33,12 +41,16 @@ export const INITIAL_HUD: DepthHud = {
   cursor: "default",
 };
 
+function isRemote(type: string) {
+  return type === "touch" || type === "pen";
+}
+
 export function createDepthStudio(onHud: (hud: DepthHud) => void): DepthStudio {
   const world: DepthWorld = createWorld();
   let play: HTMLCanvasElement | null = null;
   let target: HTMLCanvasElement | null = null;
   let observer: ResizeObserver | null = null;
-  let drag: { id: TriId; y: number; z: number } | null = null;
+  let drag: { id: TriId; grab: number } | null = null;
   let hover: TriId | null = null;
   let progressed = false;
   const hold = createHoldWatch(() => sync());
@@ -49,6 +61,14 @@ export function createDepthStudio(onHud: (hud: DepthHud) => void): DepthStudio {
     return { width: rect.width, height: rect.height };
   }
 
+  function radius(type: string) {
+    return isRemote(type) ? TOUCH_HIT : HANDLE_HIT;
+  }
+
+  function depths() {
+    return { a: world.a, b: world.b };
+  }
+
   function cursor(): DepthHud["cursor"] {
     if (drag) return "grabbing";
     if (hover) return "grab";
@@ -56,8 +76,8 @@ export function createDepthStudio(onHud: (hud: DepthHud) => void): DepthStudio {
   }
 
   function paint() {
-    if (play) drawStack(play, { a: world.a, b: world.b });
-    if (target) drawStack(target, TARGET);
+    if (play) drawStack(play, depths(), true);
+    if (target) drawStack(target, TARGET, false);
   }
 
   function sync() {
@@ -97,9 +117,11 @@ export function createDepthStudio(onHud: (hud: DepthHud) => void): DepthStudio {
       const next = size();
       if (!next) return;
       const css = pointerToCss(event.nativeEvent, play);
-      const id = hitFront(css, world, next.width, next.height);
+      const tracks = tracksOf(next.width, next.height);
+      const id = hitHandle(css, tracks, depths(), radius(event.nativeEvent.pointerType));
       if (!id) return;
-      drag = { id, y: css.y, z: world[id] };
+      const knob = handleCenter(tracks[id], world[id]);
+      drag = { id, grab: css.y - knob.y };
       hover = id;
       try {
         play.setPointerCapture(event.nativeEvent.pointerId);
@@ -113,11 +135,13 @@ export function createDepthStudio(onHud: (hud: DepthHud) => void): DepthStudio {
       const next = size();
       if (!next) return;
       const css = pointerToCss(event.nativeEvent, play);
+      const tracks = tracksOf(next.width, next.height);
       if (drag) {
-        world[drag.id] = clampDepth(drag.z - (css.y - drag.y) / next.height);
-        if (Math.abs(css.y - drag.y) > 0.5) progressed = true;
+        const nextZ = depthFromY(tracks[drag.id], css.y - drag.grab);
+        if (nextZ !== world[drag.id]) progressed = true;
+        world[drag.id] = nextZ;
       } else {
-        hover = hitFront(css, world, next.width, next.height);
+        hover = hitHandle(css, tracks, depths(), radius(event.nativeEvent.pointerType));
       }
       sync();
     },
