@@ -2,7 +2,7 @@ import { VERTEX_HEX } from "@/lib/geometry/colors";
 import { sizeCanvas } from "@/lib/geometry/draw-scene";
 import type { Vec2 } from "@/lib/geometry/types";
 
-import { CELL, CENTER_R, VERTEX_R } from "@/lib/day-03/world";
+import { CELL, CENTER_DIAMETER, VERTEX_R } from "@/lib/day-03/world";
 import type { Cell, GridLayout } from "@/lib/day-03/grid";
 
 const LIT = { r: 26, g: 127, b: 75 };
@@ -50,7 +50,7 @@ function drawDot(ctx: CanvasRenderingContext2D, x: number, y: number, t: number)
   const b = INK.b + (255 - INK.b) * t;
   const a = INK.a + (1 - INK.a) * t;
   ctx.beginPath();
-  ctx.arc(x, y, CENTER_R, 0, Math.PI * 2);
+  ctx.arc(x, y, CENTER_DIAMETER / 2, 0, Math.PI * 2);
   ctx.fillStyle = `rgb(${r} ${g} ${b} / ${a})`;
   ctx.fill();
 }

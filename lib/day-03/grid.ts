@@ -76,7 +76,13 @@ export function hitCell(point: Vec2, layout: GridLayout, cells: Cell[]) {
   return cells[row * layout.cols + col] ?? null;
 }
 
+export function insideCells(cells: Cell[]) {
+  return cells.filter((cell) => cell.inside);
+}
+
 export function allMatched(cells: Cell[], lit: boolean[]) {
-  if (!cells.some((cell) => cell.inside)) return false;
-  return cells.every((cell) => lit[cell.i] === cell.inside);
+  const insides = insideCells(cells);
+  if (insides.length === 0) return false;
+  if (insides.some((cell) => !lit[cell.i])) return false;
+  return cells.every((cell) => !cell.inside || lit[cell.i]);
 }

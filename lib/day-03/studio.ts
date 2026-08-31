@@ -44,6 +44,7 @@ export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudi
   let layout: GridLayout | null = null;
   let cells: Cell[] = [];
   let raf = 0;
+  let progressed = false;
   const hold = createHoldWatch(() => sync());
 
   function size() {
@@ -67,6 +68,8 @@ export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudi
       world.solved = false;
       world.holding = false;
       world.holdFrom = 0;
+      progressed = false;
+      hold.stop();
     }
     return next;
   }
@@ -81,7 +84,7 @@ export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudi
     if (!next || !layout) return;
     const now = performance.now();
     const reduced = reducedMotion();
-    const ready = allMatched(cells, world.lit) && !world.solved;
+    const ready = progressed && allMatched(cells, world.lit) && !world.solved;
     hold.evaluate(world, ready);
     drawRaster(canvas, layout, cells, lights(now, reduced));
     onHud({ solved: world.solved, holding: world.holding });
@@ -114,6 +117,7 @@ export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudi
       world.from[cell.i] = lightAt(world, cell.i, now, reduced);
       world.lit[cell.i] = !world.lit[cell.i];
       world.started[cell.i] = now;
+      if (world.lit[cell.i]) progressed = true;
       sync();
     },
     reset() {
@@ -123,6 +127,7 @@ export function createRasterStudio(onHud: (hud: RasterHud) => void): RasterStudi
       world.holding = false;
       world.holdFrom = 0;
       world.solved = false;
+      progressed = false;
       hold.stop();
       if (raf) cancelAnimationFrame(raf);
       raf = 0;

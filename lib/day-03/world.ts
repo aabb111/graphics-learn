@@ -1,7 +1,8 @@
 import type { Vec2 } from "@/lib/geometry/types";
 
 export const CELL = 48;
-export const CENTER_R = 2;
+export const CENTER_DIAMETER = 4;
+export const CENTER_R = CENTER_DIAMETER / 2;
 export const VERTEX_R = 3;
 export const TWEEN_MS = 80;
 
