@@ -34,13 +34,15 @@ export const SPAWN: Trs = {
 };
 
 export const PLAY_FILL = "rgb(47, 79, 224)";
-export const GHOST_FILL = "rgb(20 20 20 / 0.04)";
-export const GHOST_STROKE = "rgb(20 20 20 / 0.22)";
+export const GHOST_FILL = "rgb(47 79 224 / 0.14)";
+export const GHOST_STROKE = "rgb(47 79 224 / 0.45)";
+export const GHOST_STROKE_W = 1.5;
 
-export const VERTEX_R = 3;
+export const SCALE_SIZE = 12;
+export const HANDLE_STROKE = 2;
 export const VERTEX_HIT = 22;
-export const ROTATE_R = 7;
-export const ROTATE_STROKE = 2;
+export const ROTATE_R = 6;
+export const ROTATE_OUTSET = 10;
 export const ROTATE_HIT = 22;
 export const TOUCH_HIT = 22;
 

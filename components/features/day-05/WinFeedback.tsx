@@ -14,7 +14,7 @@ export function WinFeedback({ onReset }: WinFeedbackProps) {
       <p className="motion-pass-title text-[14px] leading-6 text-success">过关了</p>
       <PassStamp mark="5" />
       <p className="motion-pass-late text-[14px] leading-6">
-        对上了。位置、角度、大小可以分开改。
+        形状没改，只是位置、角度、大小变了。
       </p>
       <div className="motion-pass-late flex flex-nowrap items-center gap-2">
         <Button variant="ghost" className="h-8" onClick={onReset}>

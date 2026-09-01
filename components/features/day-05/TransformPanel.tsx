@@ -15,12 +15,12 @@ export function TransformPanel({ hud, onReset }: TransformPanelProps) {
     <aside className="flex flex-col gap-8 md:w-[340px] md:shrink-0">
       <div className="flex flex-col gap-3">
         <p className="text-[11px] tracking-[0.16em] text-muted-foreground">第 5 关</p>
-        <h1 className="text-[28px] font-normal tracking-tight">2D 变换</h1>
+        <h1 className="text-[28px] font-normal tracking-tight">变换</h1>
       </div>
       {hud.solved ? <WinFeedback onReset={onReset} /> : <HoldHint show={hud.holding} />}
       <LessonBlock
-        ink="挪、转、放大缩小是三件事。合在一起，才能对上那块淡影。"
-        mute="这叫二维变换。"
+        ink="挪、转、放大不会改三角是什么，只改它在平面上的位置和大小。"
+        mute="这叫变换。"
         links={L5_LINKS}
       />
       {hud.solved ? null : (

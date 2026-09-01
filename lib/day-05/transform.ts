@@ -2,6 +2,7 @@ import type { Vec2 } from "@/lib/geometry/types";
 
 import {
   CANONICAL,
+  ROTATE_OUTSET,
   SCALE_MAX,
   SCALE_MIN,
   type Trs,
@@ -48,11 +49,29 @@ export function centroidPx(trs: Trs, width: number, height: number): Vec2 {
   return { x: trs.cx * width, y: trs.cy * height };
 }
 
-export function rotateHandleOf(verts: TriangleVerts): Vec2 {
-  return {
-    x: (verts.b.x + verts.c.x) / 2,
-    y: (verts.b.y + verts.c.y) / 2,
-  };
+const EDGES: Array<[keyof TriangleVerts, keyof TriangleVerts, keyof TriangleVerts]> = [
+  ["a", "b", "c"],
+  ["b", "c", "a"],
+  ["c", "a", "b"],
+];
+
+export function rotateHandlesOf(verts: TriangleVerts): Vec2[] {
+  return EDGES.map(([fromId, toId, otherId]) => {
+    const from = verts[fromId];
+    const to = verts[toId];
+    const other = verts[otherId];
+    const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const len = Math.hypot(dx, dy) || 1;
+    let nx = -dy / len;
+    let ny = dx / len;
+    if (nx * (other.x - mid.x) + ny * (other.y - mid.y) > 0) {
+      nx = -nx;
+      ny = -ny;
+    }
+    return { x: mid.x + nx * ROTATE_OUTSET, y: mid.y + ny * ROTATE_OUTSET };
+  });
 }
 
 export function clampScale(value: number) {

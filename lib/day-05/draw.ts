@@ -1,15 +1,16 @@
 import { sizeCanvas } from "@/lib/geometry/draw-scene";
 import type { Vec2 } from "@/lib/geometry/types";
 
-import { rotateHandleOf, vertsOf, type TriangleVerts } from "@/lib/day-05/transform";
+import { rotateHandlesOf, vertsOf, type TriangleVerts } from "@/lib/day-05/transform";
 import {
   GHOST,
   GHOST_FILL,
   GHOST_STROKE,
+  GHOST_STROKE_W,
+  HANDLE_STROKE,
   PLAY_FILL,
   ROTATE_R,
-  ROTATE_STROKE,
-  VERTEX_R,
+  SCALE_SIZE,
   type Trs,
 } from "@/lib/day-05/world";
 
@@ -18,6 +19,7 @@ function fillTriangle(
   verts: TriangleVerts,
   fill: string,
   stroke?: string,
+  strokeWidth = 1,
 ) {
   ctx.beginPath();
   ctx.moveTo(verts.a.x, verts.a.y);
@@ -28,15 +30,22 @@ function fillTriangle(
   ctx.fill();
   if (!stroke) return;
   ctx.strokeStyle = stroke;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = strokeWidth;
   ctx.stroke();
 }
 
-function drawDot(ctx: CanvasRenderingContext2D, point: Vec2, radius: number, fill: string) {
-  ctx.beginPath();
-  ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
-  ctx.fillStyle = fill;
-  ctx.fill();
+function drawScaleHandle(ctx: CanvasRenderingContext2D, point: Vec2) {
+  const half = SCALE_SIZE / 2;
+  ctx.fillStyle = PLAY_FILL;
+  ctx.fillRect(point.x - half, point.y - half, SCALE_SIZE, SCALE_SIZE);
+  ctx.lineWidth = HANDLE_STROKE;
+  ctx.strokeStyle = "#ffffff";
+  ctx.strokeRect(
+    point.x - half - HANDLE_STROKE / 2,
+    point.y - half - HANDLE_STROKE / 2,
+    SCALE_SIZE + HANDLE_STROKE,
+    SCALE_SIZE + HANDLE_STROKE,
+  );
 }
 
 function drawRotateHandle(ctx: CanvasRenderingContext2D, point: Vec2) {
@@ -45,8 +54,8 @@ function drawRotateHandle(ctx: CanvasRenderingContext2D, point: Vec2) {
   ctx.fillStyle = PLAY_FILL;
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(point.x, point.y, ROTATE_R + ROTATE_STROKE / 2, 0, Math.PI * 2);
-  ctx.lineWidth = ROTATE_STROKE;
+  ctx.arc(point.x, point.y, ROTATE_R + HANDLE_STROKE / 2, 0, Math.PI * 2);
+  ctx.lineWidth = HANDLE_STROKE;
   ctx.strokeStyle = "#ffffff";
   ctx.stroke();
 }
@@ -59,10 +68,12 @@ export function drawTransform(canvas: HTMLCanvasElement, play: Trs) {
   ctx.clearRect(0, 0, cssW, cssH);
   const ghost = vertsOf(GHOST, cssW, cssH);
   const verts = vertsOf(play, cssW, cssH);
-  fillTriangle(ctx, ghost, GHOST_FILL, GHOST_STROKE);
+  fillTriangle(ctx, ghost, GHOST_FILL, GHOST_STROKE, GHOST_STROKE_W);
   fillTriangle(ctx, verts, PLAY_FILL);
-  drawDot(ctx, verts.a, VERTEX_R, PLAY_FILL);
-  drawDot(ctx, verts.b, VERTEX_R, PLAY_FILL);
-  drawDot(ctx, verts.c, VERTEX_R, PLAY_FILL);
-  drawRotateHandle(ctx, rotateHandleOf(verts));
+  drawScaleHandle(ctx, verts.a);
+  drawScaleHandle(ctx, verts.b);
+  drawScaleHandle(ctx, verts.c);
+  for (const handle of rotateHandlesOf(verts)) {
+    drawRotateHandle(ctx, handle);
+  }
 }

@@ -3,7 +3,7 @@ import { hitPoint } from "@/lib/geometry/hit";
 import type { Vec2, VertexId } from "@/lib/geometry/types";
 
 import {
-  rotateHandleOf,
+  rotateHandlesOf,
   type TriangleVerts,
 } from "@/lib/day-05/transform";
 import { ROTATE_HIT, VERTEX_HIT } from "@/lib/day-05/world";
@@ -40,7 +40,7 @@ export function pickHit(
 ): DragKind | null {
   const corner = hitCorner(point, verts, vertexHit);
   if (corner) return { kind: "scale", id: corner };
-  if (hitPoint(point, rotateHandleOf(verts), rotateHit)) {
+  if (rotateHandlesOf(verts).some((handle) => hitPoint(point, handle, rotateHit))) {
     return { kind: "rotate" };
   }
   if (isInside(barycentric(point, verts.a, verts.b, verts.c), 1e-4)) {

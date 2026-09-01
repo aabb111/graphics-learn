@@ -15,7 +15,7 @@ function blockSelect(event: SyntheticEvent) {
   event.preventDefault();
 }
 
-const ENTER = "拖三角挪位置。边上转，角上拉大小。";
+const ENTER = "挪、转、放大，让三角对上淡影。";
 
 export function TransformStage({ studio, solved, cursor }: TransformStageProps) {
   const { bindCanvas, onPointerDown, onPointerMove, onPointerUp, onPointerLeave } =
