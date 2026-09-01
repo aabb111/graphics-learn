@@ -1,9 +1,9 @@
 import { wrapAngle } from "@/lib/day-05/transform";
 import { GHOST, type Trs } from "@/lib/day-05/world";
 
-export const POS_EPS = 18;
-export const ANGLE_EPS = 0.1;
-export const SCALE_EPS = 0.08;
+export const POS_EPS = 28;
+export const ANGLE_EPS = 0.16;
+export const SCALE_EPS = 0.12;
 
 export function trsMatch(play: Trs, width: number, height: number) {
   const dx = (play.cx - GHOST.cx) * width;
