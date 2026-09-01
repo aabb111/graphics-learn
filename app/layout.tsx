@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "图形学 · 每天一关",
-  description: "用手把图形学拖明白。现在可以玩第 1 关和第 2 关。",
+  description: "用手把图形学拖明白。现在可以玩第 1 到第 5 关。",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -5,6 +5,7 @@ import { Day01Studio } from "@/components/features/day-01/Day01Studio";
 import { Day02Studio } from "@/components/features/day-02/Day02Studio";
 import { Day03Studio } from "@/components/features/day-03/Day03Studio";
 import { Day04Studio } from "@/components/features/day-04/Day04Studio";
+import { Day05Studio } from "@/components/features/day-05/Day05Studio";
 import { SiteFooter } from "@/components/features/site/SiteFooter";
 import { SiteHeader } from "@/components/features/site/SiteHeader";
 import { DAYS, getDay } from "@/lib/days/catalog";
@@ -45,6 +46,8 @@ export default async function DayPage({
           <Day03Studio />
         ) : entry.day === 4 && entry.status === "playable" ? (
           <Day04Studio />
+        ) : entry.day === 5 && entry.status === "playable" ? (
+          <Day05Studio />
         ) : (
           <UpcomingDay entry={entry} />
         )}

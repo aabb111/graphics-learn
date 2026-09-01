@@ -40,6 +40,13 @@ export const DAYS: DayEntry[] = [
     status: "playable",
     accents: [VERTEX_HEX.a, VERTEX_HEX.c, VERTEX_HEX.a],
   },
+  {
+    day: 5,
+    title: "2D 变换",
+    lede: "挪、转、放大缩小，对上那块淡影。",
+    status: "playable",
+    accents: [VERTEX_HEX.a, "#141414", VERTEX_HEX.a],
+  },
 ];
 
 export function getDay(day: number) {
