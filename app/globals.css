@@ -133,17 +133,30 @@
   }
 }
 
-.motion-hold {
-  transition-property: opacity;
-  transition-timing-function: linear;
+.feedback-slot {
+  grid-template-rows: 0fr;
+  margin-top: 0;
+  transition-property: grid-template-rows, margin-top;
+  transition-timing-function: ease-out;
+  transition-duration: 80ms;
 }
 
-.motion-hold-in {
+.feedback-slot-in {
+  grid-template-rows: 1fr;
+  margin-top: 2rem;
   transition-duration: 120ms;
 }
 
-.motion-hold-out {
+.feedback-slot-body {
+  opacity: 0;
+  transition-property: opacity;
+  transition-timing-function: ease-out;
   transition-duration: 80ms;
+}
+
+.feedback-slot-in > .feedback-slot-body {
+  opacity: 1;
+  transition-duration: 120ms;
 }
 
 .motion-win-line {
@@ -193,13 +206,11 @@
   touch-action: none;
 }
 
-.hold-slot {
-  transition-property: grid-template-rows;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .motion-hold,
-  .hold-slot {
+  .feedback-slot,
+  .feedback-slot-body,
+  .feedback-slot-in,
+  .feedback-slot-in > .feedback-slot-body {
     transition-duration: 0ms;
   }
 

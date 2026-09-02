@@ -1,9 +1,11 @@
+import { LessonAside } from "@/components/features/lesson/LessonAside";
 import { LessonBlock } from "@/components/features/lesson/LessonBlock";
 import { HoldHint } from "@/components/features/motion/HoldHint";
 import { WeightBars } from "@/components/features/day-01/WeightBars";
 import { WinFeedback } from "@/components/features/day-01/WinFeedback";
 import { Button } from "@/components/ui/button";
 import { L1_LINKS } from "@/lib/days/sources";
+import { L1_KNOWLEDGE } from "@/lib/days/knowledge";
 import type { StudioHud } from "@/lib/geometry/studio";
 
 type CoordPanelProps = {
@@ -13,17 +15,15 @@ type CoordPanelProps = {
 
 export function CoordPanel({ hud, onReset }: CoordPanelProps) {
   return (
-    <aside className="flex flex-col gap-8 md:w-[340px] md:shrink-0">
-      <div className="flex flex-col gap-3">
-        <p className="text-[11px] tracking-[0.16em] text-muted-foreground">第 1 关</p>
-        <h1 className="text-[28px] font-normal tracking-tight">
-          三个角各占多少
-        </h1>
-      </div>
-      <WeightBars hud={hud} />
-      {hud.solved ? <WinFeedback onReset={onReset} /> : <HoldHint show={hud.holding} />}
+    <LessonAside
+      kicker="第 1 关"
+      title="三个角各占多少"
+      hud={<WeightBars hud={hud} />}
+      showFeedback={hud.solved || hud.holding}
+      feedback={hud.solved ? <WinFeedback onReset={onReset} /> : <HoldHint />}
+    >
       <LessonBlock
-        ink="三角里任意一点都能拆成三个角各占多少，三个数加起来是 1。靠近哪个角，哪个数越接近 1。"
+        ink={L1_KNOWLEDGE}
         mute="这叫重心坐标。上色、贴图都先算它。"
         links={L1_LINKS}
       />
@@ -32,6 +32,6 @@ export function CoordPanel({ hud, onReset }: CoordPanelProps) {
           重置三角形
         </Button>
       )}
-    </aside>
+    </LessonAside>
   );
 }

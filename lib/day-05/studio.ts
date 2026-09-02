@@ -45,6 +45,8 @@ export const INITIAL_HUD: TransformHud = {
 type DragState = {
   kind: DragKind;
   grab: Vec2;
+  last: Vec2;
+  touch: boolean;
   angle: number;
   scale: number;
   dist: number;
@@ -97,7 +99,11 @@ export function createTransformStudio(
   function applyDrag(css: Vec2, next: { width: number; height: number }) {
     if (!drag) return;
     const before = readTrs(world);
-    if (drag.kind.kind === "body") {
+    if (drag.kind.kind === "body" && drag.touch) {
+      world.cx = clampCenter(world.cx + (css.x - drag.last.x) / next.width);
+      world.cy = clampCenter(world.cy + (css.y - drag.last.y) / next.height);
+      drag.last = { ...css };
+    } else if (drag.kind.kind === "body") {
       world.cx = clampCenter((css.x - drag.grab.x) / next.width);
       world.cy = clampCenter((css.y - drag.grab.y) / next.height);
     } else if (drag.kind.kind === "rotate") {
@@ -156,6 +162,8 @@ export function createTransformStudio(
       drag = {
         kind,
         grab: { x: css.x - center.x, y: css.y - center.y },
+        last: { ...css },
+        touch: isRemote(event.nativeEvent.pointerType),
         angle: Math.atan2(css.y - center.y, css.x - center.x) - world.rotation,
         scale: world.scale,
         dist: Math.hypot(css.x - center.x, css.y - center.y),
