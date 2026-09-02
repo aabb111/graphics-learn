@@ -1,3 +1,10 @@
+export function splitInkSentences(ink: string) {
+  return ink
+    .split("。")
+    .filter((part) => part.length > 0)
+    .map((part) => `${part}。`);
+}
+
 export const L1_KNOWLEDGE =
   "三个数跟着这个点变。靠近哪个角，哪个数就大。贴到某一个角上，那个数是 1，另两个是 0。贴到一条边上，是两个角在分，第三个是 0。正中三个一样，都是三分之一。三个数加起来一直是 1。它们不是颜色，是这一点里三个角各占多少。三角里每一点都有自己的三份。换点，就重分一次。";
 

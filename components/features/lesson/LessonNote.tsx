@@ -1,3 +1,6 @@
+import { splitInkSentences } from "@/lib/days/knowledge";
+import { cn } from "@/lib/utils";
+
 type LessonNoteProps = {
   ink: string;
   mute: string;
@@ -5,9 +8,13 @@ type LessonNoteProps = {
 
 export function LessonNote({ ink, mute }: LessonNoteProps) {
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-[14px] leading-6 text-foreground">{ink}</p>
-      <p className="text-[11px] leading-5 text-muted-foreground">{mute}</p>
+    <div className={cn("flex flex-col", "gap-2")}>
+      {splitInkSentences(ink).map((sentence) => (
+        <p key={sentence} className={cn("text-[14px]", "leading-6", "text-foreground")}>
+          {sentence}
+        </p>
+      ))}
+      <p className={cn("text-[11px]", "leading-5", "text-muted-foreground")}>{mute}</p>
     </div>
   );
 }
